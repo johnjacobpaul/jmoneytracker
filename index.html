@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>J Money Tracker - V4.6.15</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
@@ -81,6 +81,8 @@
   </script>
   <style>
     body { font-family: 'Inter', sans-serif; background: var(--bg, #1C1938); color: #C3B4A8; }
+    html { overflow-x: hidden; }
+    #webExcelSection .overflow-x-auto { -webkit-overflow-scrolling: touch; max-width: 100vw; }
     .container { max-width: 650px; }
     .groovy-card { background: #3D363A; box-shadow: 0 5px 15px rgba(0,0,0,.4); backdrop-filter: blur(10px); border: 1px solid #5A5157; }
     input, select { background-color: rgba(255,255,255,.05); border: 1px solid #5A5157; color: #F4E2C9; }
@@ -114,7 +116,7 @@
 .unblur-toggle:hover { background:#5A5157; }
   </style>
 </head>
-<body class="min-h-screen" style="background:#1C1938;">
+<body class="min-h-screen" style="background:#1C1938; overflow-x:hidden;">
 
 <!-- ============ LOGIN PAGE ============ -->
 <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:#1C1938;">
@@ -2372,68 +2374,113 @@
     const loginError = document.getElementById('loginError');
     const loginLoadingMsg = document.getElementById('loginLoadingMsg');
 
-    function showLogin() { mainApp.classList.add('hidden'); loginPage.classList.remove('hidden'); loginBtn.disabled = false; }
-    function showErr(msg) { loginError.textContent = msg; loginError.classList.remove('hidden'); }
-
-    async function showApp() {
-      const { data: { user } } = await _supabase.auth.getUser();
-      if (!user) return;
-      _currentUserId = user.id;
-
-      // Show loading state
-      loginLoadingMsg.textContent = 'Loading your data…';
-      loginLoadingMsg.classList.remove('hidden');
-      loginBtn.disabled = true;
-
-      await dbLoad();
-
-      // One-time migration: Supabase empty but localStorage has data
-      const hasCloud = Object.keys(_dbCache).length > 0;
-      const hasLocal = !!localStorage.getItem('expensesData');
-      if (!hasCloud && hasLocal) {
-        if (confirm('📦 Found existing data in this browser.\nMigrate it to Supabase cloud storage?\n(Do this once — your data will then sync across devices.)')) {
-          await migrateFromLocalStorage();
-          await dbLoad();
-        }
-      }
-
-      loginPage.classList.add('hidden');
+    function showLogin() {
+      _appInitialized = false;
+      mainApp.classList.add('hidden');
+      mainApp.classList.remove('flex');
+      loginPage.classList.remove('hidden');
+      loginBtn.disabled = false;
       loginLoadingMsg.classList.add('hidden');
-      mainApp.classList.remove('hidden');
-      mainApp.classList.add('flex');
-      initAppData();
     }
 
-    // Check existing session on load
-    _supabase.auth.getSession().then(({ data }) => {
-      if (data.session) showApp();
-    });
+    function showErr(msg) {
+      loginError.textContent = msg;
+      loginError.classList.remove('hidden');
+    }
 
-    // Auth state listener — fires on login/logout
+    let _appInitialized = false;
+
+    async function showApp() {
+      if (_appInitialized) return; // guard: don't run twice (token refresh etc.)
+
+      try {
+        const { data: { user }, error: userErr } = await _supabase.auth.getUser();
+        if (userErr || !user) { showLogin(); return; }
+
+        _currentUserId = user.id;
+        _appInitialized = true;
+
+        loginLoadingMsg.textContent = 'Loading your data…';
+        loginLoadingMsg.classList.remove('hidden');
+
+        await dbLoad();
+
+        // One-time migration: Supabase empty but localStorage has data
+        const hasCloud = Object.keys(_dbCache).length > 0;
+        const hasLocal = !!localStorage.getItem('expensesData');
+        if (!hasCloud && hasLocal) {
+          if (confirm('📦 Found existing data in this browser.\nMigrate it to Supabase cloud storage?\n(Do this once — your data will then sync across devices.)')) {
+            await migrateFromLocalStorage();
+            await dbLoad();
+          }
+        }
+
+        loginPage.classList.add('hidden');
+        loginLoadingMsg.classList.add('hidden');
+        loginBtn.disabled = false;
+        mainApp.classList.remove('hidden');
+        mainApp.classList.add('flex');
+        initAppData();
+
+      } catch (err) {
+        console.error('showApp error:', err);
+        _appInitialized = false;
+        loginLoadingMsg.classList.add('hidden');
+        loginBtn.disabled = false;
+        showErr('Failed to load app data. Check your internet connection and try again.');
+      }
+    }
+
+    // ── Auth state listener ──────────────────────────────────────────────────
+    // onAuthStateChange fires immediately with the current session on page load
+    // (replaces the old getSession() + onAuthStateChange double-call pattern)
     _supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) { showApp(); } else { showLogin(); }
+      if (session) {
+        showApp();
+      } else {
+        // Only call showLogin() if app was previously shown (i.e. a real sign-out)
+        if (_appInitialized) showLogin();
+      }
     });
 
-    // Login button
+    // ── Login button ─────────────────────────────────────────────────────────
     loginBtn.addEventListener('click', async () => {
       const email    = loginEmail.value.trim();
       const password = loginPass.value;
       if (!email || !password) { showErr('Please enter your email and password.'); return; }
+
       loginBtn.disabled = true;
       loginLoadingMsg.textContent = 'Signing in…';
       loginLoadingMsg.classList.remove('hidden');
       loginError.classList.add('hidden');
-      const { error } = await _supabase.auth.signInWithPassword({ email, password });
-      if (error) { showErr(error.message); loginBtn.disabled = false; loginLoadingMsg.classList.add('hidden'); }
-      // on success, onAuthStateChange fires → showApp() takes over
+
+      try {
+        const { error } = await _supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          let msg = error.message;
+          if (msg.toLowerCase().includes('email not confirmed')) {
+            msg = 'Your email is not confirmed. In your Supabase dashboard go to Authentication → Users, find your user and click "Confirm" — or go to Authentication → Providers → Email and turn off "Confirm email".';
+          } else if (msg.toLowerCase().includes('invalid login credentials')) {
+            msg = 'Incorrect email or password. Make sure you created a user under Authentication → Users in your Supabase dashboard.';
+          }
+          showErr(msg);
+          loginBtn.disabled = false;
+          loginLoadingMsg.classList.add('hidden');
+        }
+        // On success → onAuthStateChange fires with session → showApp() takes over
+      } catch (err) {
+        showErr('Network error — check your internet connection and try again.');
+        loginBtn.disabled = false;
+        loginLoadingMsg.classList.add('hidden');
+      }
     });
 
-    // Enter key on login fields
+    // Enter key submits login
     [loginEmail, loginPass].forEach(el => {
       el.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
     });
 
-    // Logout
+    // ── Logout ───────────────────────────────────────────────────────────────
     document.getElementById('navLogout').addEventListener('click', async () => {
       _currentUserId = null;
       Object.keys(_dbCache).forEach(k => delete _dbCache[k]);
