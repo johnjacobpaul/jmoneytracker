@@ -182,9 +182,21 @@
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>
         Log Income
     </button>
+    <button id="navSplitwise" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+        Splitwise
+    </button>
+    <button id="navLiabilities" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+        Liabilities
+    </button>
+    <button id="navLendCash" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        Lend/Cash
+    </button>
     <button id="navNetWorth" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-        Net Worth
+        Report Closing Balance
     </button>
     <button id="navInflowOutflow" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -302,8 +314,6 @@
       <option>Contingency</option>
       <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
       <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
-      <option>Investment</option><option>Lend /Cash Holdings</option><option>AMEX Receivables (Pending)</option>
-      <option>Splitwise Settled</option>
     </select>
 
     <select id="paymentMode" required class="w-full p-4 rounded-xl">
@@ -464,7 +474,6 @@
   <div class="mb-4">
     <div class="flex gap-2 overflow-x-auto pb-2">
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-assets">Primary Assets</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-investments">Investments</button>
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-cash">Lend/Cash</button>
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-splitwise">Splitwise</button>
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-liabilities">Liabilities</button>
@@ -492,13 +501,6 @@
 
     <div id="paRows" class="space-y-2"></div>
   </div>
-
-  <!-- Investments -->
-  <div id="tab-investments" class="nw-panel hidden text-center p-8">
-      <h2 class="text-2xl font-bold">Coming Soon</h2>
-      <p class="mt-2 opacity-80">The investments tracker is under development.</p>
-  </div>
-
 
   <!-- Lend / Cash Holdings -->
   <div id="tab-cash" class="nw-panel hidden">
@@ -875,6 +877,21 @@
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-assets"]'));
   };
+  document.getElementById('navSplitwise').onclick = () => {
+    showSection(netWorthSection);
+    recalculateAllNetWorth();
+    activateTab(document.querySelector('[data-tab="tab-splitwise"]'));
+  };
+  document.getElementById('navLiabilities').onclick = () => {
+    showSection(netWorthSection);
+    recalculateAllNetWorth();
+    activateTab(document.querySelector('[data-tab="tab-liabilities"]'));
+  };
+  document.getElementById('navLendCash').onclick = () => {
+    showSection(netWorthSection);
+    recalculateAllNetWorth();
+    activateTab(document.querySelector('[data-tab="tab-cash"]'));
+  };
   document.getElementById('navInflowOutflow').onclick = () => showSection(inflowOutflowSection);
   document.getElementById('navAnalytics').onclick = () => { showSection(webExcelSection); renderWebExcel(); };
   document.getElementById('navClearData').onclick = async () => {
@@ -891,7 +908,7 @@
     const menuButtons = document.querySelectorAll('#menuPanel button[id^="nav"]');
     
     menuButtons.forEach(btn => {
-        if (['navClearData', 'navViewLogs', 'navHome', 'navExportData', 'navImportData', 'navLogout'].includes(btn.id)) return;
+        if (['navClearData', 'navViewLogs', 'navHome', 'navExportData', 'navImportData', 'navLogout', 'navNetWorth'].includes(btn.id)) return;
 
         const tile = document.createElement('button');
         tile.className = 'flex flex-col items-center justify-center p-4 rounded-2xl groovy-card hover:bg-[#5A5157] transition-transform hover:scale-105 text-center';
@@ -1378,8 +1395,7 @@
         logAction('add_expense', { amount: original, category, mode: `Splitwise (paid by others)` });
       }
     } else {
-      const isSettled = category === 'Splitwise Settled';
-      const entry={id:expenseId, date, amount:original, category, mode, desc, entryType: isSettled ? "Splitwise Settled" : "Expense (Personal)", affectsTotal: isSettled ? "No" : "Yes"};
+      const entry={id:expenseId, date, amount:original, category, mode, desc, entryType:"Expense (Personal)", affectsTotal:"Yes"};
       newEntries.push(entry);
       logAction('add_expense', { amount: original, category, mode });
     }
@@ -2185,10 +2201,13 @@
       {label:null,                      color:'yellow', src:'expense',      cat:'Transportation',      modeFilter:'debit'},
       // Yellow only
       {label:'Offering',                color:'yellow', src:'expense',      cat:'Offering'},
-      {label:'Investment',              color:'yellow', src:'expense',      cat:'Investment'},
-      {label:'Lend /Cash Holdings',     color:'yellow', src:'expense',      cat:'Lend /Cash Holdings'},
+      {label:'CC Settlement',           color:'yellow', src:'expense',      cat:'CC Settlement'},
+      {label:'Investment',              color:'yellow', src:'none'},
+      {label:'Lend /Cash Holdings',     color:'yellow', src:'lc_debit_pos'},
       // Grey only
-      {label:'AMEX Receivables (Pending)', color:'grey', src:'expense',     cat:'AMEX Receivables (Pending)'},
+      {label:'AMEX Receivables (Pending)', color:'grey', src:'none'},
+      {label:'CC Spends (Non SW) / Refund', color:'grey', src:'lc_cc'},
+      {label:'CC Transfer (Non SW)',    color:'yellow', src:'lc_debit_neg'},
       // Splitwise (start of splitwise section — copied separately)
       {label:'Splitwise (Credit Card)', color:'grey',   src:'sw_splitwise', modeFilter:'cc',    negate:true, splitwise:true, breakBefore:true},
       {label:'Splitwise (Debit Card)',  color:'yellow', src:'sw_splitwise', modeFilter:'debit', negate:true, splitwise:true},
@@ -2261,11 +2280,28 @@
         raw = getData('nwSplitwiseSettlements', [])
           .filter(e => e.date === dateStr)
           .map(e => e.amount);
-        // Also include expense entries logged with category 'Splitwise Settled'
-        const expSettled = getData('expensesData', [])
-          .filter(e => e.date === dateStr && e.category === 'Splitwise Settled')
+
+      } else if (src === 'lc_cc') {
+        // Lend/Cash Holding entries on a credit-card payment mode (any sign)
+        raw = getData('nwLendCash', [])
+          .filter(e => e.date === dateStr && CC_MODES.has(e.mode))
           .map(e => e.amount);
-        raw = raw.concat(expSettled);
+
+      } else if (src === 'lc_debit_neg') {
+        // Lend/Cash Holding entries on a debit payment mode where amount is negative
+        raw = getData('nwLendCash', [])
+          .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount < 0)
+          .map(e => e.amount);
+
+      } else if (src === 'lc_debit_pos') {
+        // Lend/Cash Holding entries on a debit payment mode where amount is positive
+        raw = getData('nwLendCash', [])
+          .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount > 0)
+          .map(e => e.amount);
+
+      } else if (src === 'none') {
+        // Placeholder row — no automatic data feed (user fills in spreadsheet manually)
+        raw = [];
       }
 
       return raw.map(v => Math.round(v * 100) / 100).filter(v => v !== 0);
