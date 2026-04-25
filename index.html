@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>J Money Tracker - V4.6.15</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script>
@@ -84,386 +84,182 @@
   </script>
   <style>
     /* ===========================================================
-       THEME TOKENS — every color in the app reads from these vars,
-       so flipping data-theme="light" on <html> recolors everything.
+       THEME TOKENS — Ammu's Products Transformation
        =========================================================== */
     :root {
-      /* Dark theme (default) */
-      --app-bg:        #1C1938;
-      --surface-1:     #3D363A;   /* primary card */
-      --surface-2:     #2F2A2D;   /* nested card / mini-stat / nw-row */
-      --surface-3:     #5A5157;   /* button base / borders */
-      --surface-3-hov: #72656E;
-      --border:        #5A5157;
-      --border-soft:   rgba(244,226,201,0.12);
-      --text:          #C3B4A8;
-      --text-strong:   #F4E2C9;
-      --text-muted:    rgba(244,226,201,.6);
-      --input-bg:      rgba(255,255,255,.05);
-      --placeholder:   rgba(244,226,201,.5);
-      --shadow-card:   0 5px 15px rgba(0,0,0,.4);
-      --shadow-button: 0 4px 15px rgba(0,0,0,.4);
-      --shadow-hero:   0 4px 18px rgba(0,0,0,0.18);
-      --hero-bg:       linear-gradient(135deg, rgba(244,226,201,0.06) 0%, rgba(195,180,168,0.02) 100%);
-      --hero-icon-bg:  linear-gradient(135deg, #5A5157 0%, #3D363A 100%);
-      --hero-icon-ring: rgba(244,226,201,0.15);
-      --bn-bg:         #2F2A2D;
-      --bn-active:     #5A5157;
-      --pos-color:     #FCA5A5;
-      --neg-color:     #86EFAC;
-      --danger:        #f87171;
-    }
-    [data-theme="light"] {
-      /* Light theme — soft lavender background, amethyst text */
-      --app-bg:        #EDE7F6;   /* light lavender canvas */
-      --surface-1:     #FFFFFF;   /* primary card / menu / dialog */
-      --surface-2:     #F4EFFB;   /* nested card / mini-stat / nw-row */
-      --surface-3:     #D1C4E9;   /* button base / borders */
-      --surface-3-hov: #B39DDB;
-      --border:        #C5B6E0;
-      --border-soft:   rgba(106, 27, 154, 0.18);
-      --text:          #6A1B9A;   /* amethyst */
-      --text-strong:   #4A148C;   /* deeper amethyst for headings */
-      --text-muted:    rgba(106, 27, 154, 0.6);
-      --input-bg:      rgba(255,255,255,.85);
-      --placeholder:   rgba(106, 27, 154, 0.45);
-      --shadow-card:   0 4px 14px rgba(74, 20, 140, 0.10);
-      --shadow-button: 0 3px 10px rgba(74, 20, 140, 0.14);
-      --shadow-hero:   0 3px 14px rgba(74, 20, 140, 0.10);
-      --hero-bg:       linear-gradient(135deg, rgba(149, 117, 205, 0.12) 0%, rgba(179, 157, 219, 0.06) 100%);
-      --hero-icon-bg:  linear-gradient(135deg, #B39DDB 0%, #D1C4E9 100%);
-      --hero-icon-ring: rgba(74, 20, 140, 0.18);
-      --bn-bg:         #F4EFFB;
-      --bn-active:     #D1C4E9;
-      --pos-color:     #B91C1C;
-      --neg-color:     #15803D;
-      --danger:        #b91c1c;
+      --app-bg: #e0d5e9;
+      --lavender: #f0ebf5;
+      --surface-1: #ffffff;
+      --surface-2: #fcfbfe;
+      --surface-3: #b81273; /* Magenta */
+      --surface-3-hov: #d63d95;
+      --border: #e4dcf0;
+      --text-dark: #403844;
+      --text-muted: #958a9e;
+      --text-mid: #685972;
+      --pink-pale: #f9e6f1;
+      --pink-border: #f1bddd;
+      --shadow-card: 0 2px 8px rgba(64,56,68,.04);
+      --shadow-button: 0 4px 16px rgba(184,18,115,.25);
+      --pos-color: #16a34a;
+      --neg-color: #dc2626;
+      --danger: #991b1b;
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--app-bg); color: var(--text); transition: background .25s ease, color .25s ease; }
-    html { overflow-x: hidden; }
-    #webExcelSection .overflow-x-auto { -webkit-overflow-scrolling: touch; max-width: 100vw; }
-    .container { max-width: 650px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--app-bg) !important; color: var(--text-dark) !important; overflow-x: hidden; }
 
-    /* Card surfaces */
-    .groovy-card { background: var(--surface-1); box-shadow: var(--shadow-card); border: 1px solid var(--border); }
-    .mini-stat { background: var(--surface-2); border: 1px solid var(--border); }
-    .nw-row    { background: var(--surface-2); border: 1px solid var(--border); }
-    .nw-col-h  { color: var(--text-strong); font-weight: 600; }
+    /* Layout Constraints */
+    #mainApp { padding: 0 !important; align-items: flex-start !important; }
+    #splitContainer { background: var(--lavender) !important; width: 100%; max-width: 420px; min-height: 100vh; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.05); position: relative; }
+    #splitLeft { padding-bottom: 90px; } /* Bottom nav space */
 
-    /* Section page — non-home sections (no outer card, top-left flush) */
-    .section-page {
-      max-width: 100%;
-      margin: 0;
-      padding: 16px 16px 20px;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-    @media (min-width: 768px) {
-      .section-page { padding: 20px 24px 28px; }
-    }
-    /* Net Worth dedicated-view: nw-panels inherit section-page edges (no extra inset) */
-    #netWorthSection.dedicated-view .nw-panel { padding: 0; }
-
-    /* Inputs */
-    input, select, textarea {
-      background-color: var(--input-bg);
-      border: 1px solid var(--border);
-      color: var(--text-strong);
-    }
-    input::placeholder, textarea::placeholder { color: var(--placeholder); }
-
-    /* Buttons */
-    .groovy-button { background: var(--surface-3); color: #fff; transition: .25s; box-shadow: var(--shadow-button); }
-    .groovy-button:hover { background: var(--surface-3-hov); transform: translateY(-1px); }
-    .groovy-button:disabled { background: var(--surface-3); cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
-    [data-theme="light"] .groovy-button { color: var(--text-strong); }
-
-    /* Compact button helper — used on log/income/etc forms */
-    .btn-compact { padding: 0.625rem 0.875rem !important; font-size: 0.875rem !important; border-radius: 0.625rem !important; }
-
-    /* Misc */
-    .log-item { background: var(--input-bg); border: 1px solid var(--border); padding: 10px; border-radius: 10px; position: relative; color: var(--text); }
-    .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: var(--danger); font-weight: bold; }
-    .neg { color: var(--neg-color); } .pos { color: var(--pos-color); }
-    .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; justify-content: center; align-items: center; z-index: 50; }
-    .dialog-box { background: var(--surface-1); border: 1px solid var(--border); color: var(--text-strong); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: left; }
-    h1, h2, h3 { color: var(--text-strong); }
-    .tab-btn { border-bottom: 2px solid transparent; }
-    .tab-btn.active { border-color: var(--text-strong); color: var(--text-strong); }
-    .label-sm { font-size: .825rem; opacity: .9; }
-    .menu-item-icon { width: 1.25rem; height: 1.25rem; opacity: 0.85; }
-    .calc-btn { background-color: var(--surface-3); color: var(--text-strong); font-weight: bold; padding: 0.75rem; border-radius: 0.5rem; transition: .2s; font-size: 1.1rem; }
-    .calc-btn:hover { background-color: var(--surface-3-hov); }
-
-    /* Blur helpers */
-    .blurred-number { filter: blur(10px); }
-    .unblur-toggle {
-      position: absolute; right: .5rem; top: .5rem;
-      font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem;
-      border: 1px solid var(--border); background: var(--surface-1); color: var(--text-strong);
-    }
-    .unblur-toggle:hover { background: var(--surface-3); }
-
-    /* Theme toggle button (top bar, next to hamburger) */
-    #themeToggle {
-      position: fixed; top: 1rem; right: 4.5rem; z-index: 50;
-      width: 2.5rem; height: 2.5rem;
-      border-radius: 9999px;
-      background: var(--surface-1);
-      border: 1px solid var(--border);
-      color: var(--text-strong);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-button);
-      transition: background .2s;
-    }
-    #themeToggle:hover { background: var(--surface-3); }
-    #themeToggle svg { width: 1.1rem; height: 1.1rem; }
-
-    /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
-    #netWorthSection.dedicated-view > header { display: none !important; }
-    #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
-    /* Hide the parent "Report Closing Balance" hero when a child tab is shown standalone.
-       The child .nw-panel renders its own panel-hero (Splitwise / Liabilities / Lend & Cash),
-       and we don't want both stacked. */
-    #netWorthSection.dedicated-view > .panel-hero { display: none !important; }
-
-    /* === Page header — used on EVERY non-home section ===
-       A flat, top-left-aligned strip. No box, no background, no padding —
-       just a small icon and a title that match everywhere. */
-    .panel-hero {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0;
-      margin: 0 0 14px 0;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      border-radius: 0;
-    }
-    .panel-hero .panel-hero-icon {
-      flex: 0 0 auto;
-      width: 28px; height: 28px;
-      display: flex; align-items: center; justify-content: center;
-      background: transparent;
-      color: var(--text-strong);
-      box-shadow: none;
-      border-radius: 0;
-    }
-    .panel-hero .panel-hero-icon svg { width: 24px; height: 24px; }
-    .panel-hero .panel-hero-text { flex: 1 1 auto; min-width: 0; }
-    .panel-hero .panel-hero-text h1,
-    .panel-hero .panel-hero-text h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-strong);
-      letter-spacing: 0.01em;
-      line-height: 1.2;
-      margin: 0;
-      text-align: left;
-    }
-
-    /* === Bottom navigation bar (mobile only) === */
-    #bottomNav { display: none; }
-    @media (max-width: 768px) {
-      #bottomNav {
-        display: flex;
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        background: var(--bn-bg);
-        border-top: 1px solid var(--border);
-        z-index: 60;
-        padding: 6px 4px env(safe-area-inset-bottom) 4px;
-        gap: 0;
-      }
-      .bn-btn {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 6px 2px;
-        border-radius: 8px;
-        background: transparent;
-        color: var(--text);
-        font-size: 0.6rem;
-        font-weight: 600;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-        transition: background 120ms;
-        overflow: hidden;
-      }
-      .bn-btn:hover, .bn-btn:active { background: var(--surface-2); }
-      .bn-btn.active { background: var(--bn-active); color: var(--text-strong); }
-      .bn-btn svg { width: 20px; height: 20px; }
-      .bn-btn span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-      body { padding-bottom: 84px; }
-    }
-
-    /* === Cell-note indicator in Web Excel View === */
-    .wx-day-cell.has-note { position: relative; }
-    .wx-day-cell.has-note::after {
-      content: "";
-      position: absolute;
-      top: 0; right: 0;
-      width: 0; height: 0;
-      border-style: solid;
-      border-width: 0 6px 6px 0;
-      border-color: transparent #c0392b transparent transparent;
-      pointer-events: none;
-    }
-
-    /* === Desktop split-view ===
-       When body has .split-mode AND viewport ≥768px, the layout becomes
-       two columns: left ~30% holds the active app section, right ~70%
-       holds the Web Excel View, always visible. Mobile is unaffected. */
-    #splitContainer { display: contents; }
     @media (min-width: 768px) {
       body.split-mode #splitContainer {
-        display: grid;
-        grid-template-columns: 30fr 70fr;
-        gap: 0;
-        align-items: start;
-        max-width: 100vw;
+        max-width: 1200px; display: grid; grid-template-columns: 380px 1fr; gap: 0;
+        margin: 20px auto; border-radius: 24px; overflow: hidden; height: calc(100vh - 40px); min-height: auto;
       }
-      body.split-mode #splitLeft  { min-width: 0; overflow-x: auto; padding-right: 8px; border-right: 1px solid var(--border); }
-      body.split-mode #splitRight {
-        min-width: 0;
-        overflow-x: auto;
-        padding-left: 8px;
-        position: sticky;
-        top: 0;
-        max-height: 100vh;
-        overflow-y: auto;
-      }
-      /* In split mode, the Web Excel section is forced visible in the right pane */
+      body.split-mode #splitLeft { border-right: 1.5px solid var(--border); overflow-y: auto; background: var(--lavender) !important; padding-bottom: 20px; padding-right: 0;}
+      body.split-mode #splitRight { background: var(--surface-1) !important; overflow-y: auto; padding: 20px; }
       body.split-mode #splitRight #webExcelSection { display: block !important; }
-      body.split-mode #splitRight #webExcelSection.hidden { display: block !important; }
-      /* Each section ditches its outer max-width inside the left pane so it fills the column */
-      body.split-mode #splitLeft .section-page,
-      body.split-mode #splitLeft .container { max-width: 100%; }
     }
-    /* Below 768px, split mode is ignored — fall back to single section */
+    
     @media (max-width: 767px) {
       body.split-mode #splitRight #webExcelSection { display: none !important; }
     }
 
-    /* Hamburger menu surface */
-    #menuPanel {
-      background: var(--surface-1) !important;
-      border-color: var(--border) !important;
-      color: var(--text) !important;
+    .section-page { padding: 20px 16px !important; margin: 0 auto; max-width: 100%; background: transparent !important; border: none !important; box-shadow: none !important; }
+    
+    /* Hide Theme Toggle */
+    #themeToggle { display: none !important; }
+
+    /* Override Tailwind Dark Classes completely */
+    .text-white, .text-\[\#F4E2C9\], .text-\[\#C3B4A8\], .text-slate-300, .text-slate-400, .text-gray-400 { color: var(--text-dark) !important; text-shadow: none !important; }
+    .bg-slate-800, .bg-slate-700, .bg-slate-900, .bg-\[\#3D363A\], .bg-\[\#2F2A2D\] { background-color: var(--surface-1) !important; border-color: var(--border) !important; }
+    .border-slate-700, .border-\[\#5A5157\], .border-slate-600 { border-color: var(--border) !important; }
+    [class*="from-slate-"] { background: var(--surface-1) !important; box-shadow: var(--shadow-card) !important; border: none !important; text-shadow: none !important;}
+
+    /* Text & Headings */
+    h1, h2, h3 { color: var(--text-dark) !important; font-weight: 800 !important; }
+    .panel-hero-text h1 { font-size: 18px !important; margin-bottom: 4px; letter-spacing: 0; }
+    .panel-hero { display: flex; align-items: center; gap: 10px; margin: 0 0 14px 0; background: transparent; border: none; box-shadow: none; border-radius: 0; }
+    .panel-hero-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--text-dark) !important;}
+    .label-sm, label { font-size: 11px !important; font-weight: 700 !important; color: var(--text-muted) !important; letter-spacing: .06em !important; text-transform: uppercase !important; display: block; margin-bottom: 6px; }
+    .bg-clip-text { -webkit-text-fill-color: var(--text-dark) !important; background: none !important; } /* JMT Title */
+
+    /* Cards */
+    .container { max-width: 100% !important; }
+    .groovy-card, .mini-stat, .nw-row { background: var(--surface-1) !important; border-radius: 20px !important; box-shadow: var(--shadow-card) !important; border: none !important; padding: 16px !important; }
+    .mini-stat, .nw-row { border-radius: 14px !important; padding: 12px 14px !important; margin-bottom: 12px; }
+    .nw-col-h { color: var(--text-dark); font-weight: 800; text-transform: uppercase; font-size: 10px; letter-spacing: .04em;}
+
+    /* Inputs */
+    input, select, textarea {
+      width: 100%; padding: 11px 13px !important; border-radius: 12px !important; border: 1.5px solid var(--border) !important;
+      background: var(--surface-1) !important; color: var(--text-dark) !important; font-size: 13px !important; font-family: inherit !important; outline: none !important; transition: border-color .2s;
     }
-    #menuPanel button:hover { background: var(--surface-3) !important; }
+    input:focus, select:focus, textarea:focus { border-color: var(--surface-3) !important; }
+    input::placeholder, textarea::placeholder { color: var(--text-muted) !important; }
 
-    /* Top icons in light theme should not stay cream */
-    [data-theme="light"] #menuBtn span { background: var(--text-strong) !important; }
-
-    /* =====================================================================
-       LIGHT THEME — comprehensive contrast rescue
-       Most of the app's HTML uses Tailwind utility classes with hard-coded
-       dark colors (text-white, text-[#F4E2C9], bg-[#3D363A], border-[#5A5157]
-       etc) that look right on dark theme but break visibility on lavender.
-       The rules below systematically remap them onto amethyst tokens.
-       ===================================================================== */
-
-    /* --- Surfaces: dark-named greys → light surfaces --- */
-    [data-theme="light"] .bg-slate-800,
-    [data-theme="light"] .bg-slate-700 { background-color: var(--surface-2) !important; }
-    [data-theme="light"] .border-slate-700 { border-color: var(--border) !important; }
-    [data-theme="light"] .hover\:bg-slate-700:hover { background-color: var(--surface-3) !important; }
-    [data-theme="light"] .bg-slate-600 { background-color: var(--surface-3) !important; color: var(--text-strong) !important; }
-    [data-theme="light"] .bg-slate-600.hover\:bg-slate-700:hover { background-color: var(--surface-3-hov) !important; }
-    /* Hard-coded hex backgrounds used in the menu / tabs / record-tally button */
-    [data-theme="light"] .bg-\[\#3D363A\]   { background-color: var(--surface-1) !important; }
-    [data-theme="light"] .bg-\[\#2F2A2D\]   { background-color: var(--surface-2) !important; }
-    [data-theme="light"] .bg-\[\#5A5157\],
-    [data-theme="light"] .hover\:bg-\[\#5A5157\]:hover { background-color: var(--surface-3) !important; }
-    [data-theme="light"] .border-\[\#5A5157\] { border-color: var(--border) !important; }
-
-    /* --- Text colors: cream / white → amethyst --- */
-    [data-theme="light"] .text-\[\#F4E2C9\] { color: var(--text-strong) !important; }
-    [data-theme="light"] .text-\[\#C3B4A8\] { color: var(--text) !important; }
-    /* text-white is everywhere — recolor it to amethyst headings, EXCEPT when
-       it sits on a colored utility background (green/red/purple/blue/orange) */
-    [data-theme="light"] .text-white { color: var(--text-strong) !important; }
-    [data-theme="light"] .bg-green-500.text-white,
-    [data-theme="light"] .bg-green-600.text-white,
-    [data-theme="light"] .bg-red-500.text-white,
-    [data-theme="light"] .bg-red-600.text-white,
-    [data-theme="light"] .bg-blue-600.text-white,
-    [data-theme="light"] .bg-blue-700.text-white,
-    [data-theme="light"] .bg-purple-600.text-white,
-    [data-theme="light"] .bg-purple-700.text-white,
-    [data-theme="light"] .bg-orange-500.text-white,
-    [data-theme="light"] .bg-orange-600.text-white {
-      color: #FFFFFF !important;     /* keep white on saturated buttons */
+    /* Buttons */
+    .groovy-button, button[type="submit"] {
+      background: var(--surface-3) !important; color: #fff !important; border-radius: 16px !important; padding: 14px !important;
+      font-weight: 800 !important; font-size: 15px !important; box-shadow: var(--shadow-button) !important; border: none !important; transition: transform .15s;
     }
-    /* Buttons whose background is the cream/cream-toned groovy-button still need
-       legible text in light mode */
-    [data-theme="light"] .groovy-button { color: var(--text-strong) !important; }
+    .groovy-button:active { transform: scale(0.98); }
+    .groovy-button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none !important; }
+    button.bg-slate-600 { background: var(--surface-1) !important; color: var(--text-muted) !important; border: 1.5px solid var(--border) !important; box-shadow: none !important; }
+    button.bg-blue-600, button.bg-green-500, button.bg-red-500, button.bg-purple-600 { color: #fff !important; font-weight: 800 !important; border-radius: 14px !important;}
+    
+    .unblur-toggle { position: absolute; right: 1rem; top: 1rem; font-size: 10px !important; font-weight: 800; padding: 6px 10px !important; border-radius: 10px !important; border: 1.5px solid var(--border) !important; background: var(--surface-1) !important; color: var(--text-dark) !important;}
+    .blurred-number { filter: blur(10px); }
 
-    /* --- Muted greys --- */
-    [data-theme="light"] .text-gray-400 { color: var(--text-muted) !important; }
-    [data-theme="light"] .text-gray-500 { color: var(--text-muted) !important; }
-
-    /* --- Net Worth snapshot block (was a deep-blue gradient) --- */
-    [data-theme="light"] [class*="from-slate-800/50"] {
-      background: var(--surface-2) !important;
-      box-shadow: var(--shadow-card) !important;
+    /* Home Page Tiles (Ammu's .abtn style) */
+    #homeNavGrid { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+    #homeNavGrid .groovy-card {
+      display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important;
+      padding: 14px 15px !important; border-radius: 20px !important; gap: 13px !important; text-align: left !important; cursor: pointer; border: none !important;
     }
-    [data-theme="light"] [class*="from-slate-800/50"] .text-white {
-      color: var(--text-strong) !important;
-      text-shadow: none !important;
+    #homeNavGrid .groovy-card:active { transform: scale(0.97); }
+    #homeNavGrid .groovy-card > div {
+      width: 46px !important; height: 46px !important; border-radius: 14px !important; background: var(--pink-pale) !important;
+      color: var(--surface-3) !important; display: flex !important; align-items: center !important; justify-content: center !important; margin-bottom: 0 !important; flex-shrink: 0;
     }
+    #homeNavGrid .groovy-card span { font-size: 14px !important; font-weight: 700 !important; color: var(--text-dark) !important; }
 
-    /* --- "J Money Tracker" gradient title — special case ---
-       The HTML uses bg-clip-text + text-transparent + a Tailwind gradient.
-       In light mode, swap the WebKit text fill to a solid amethyst directly.
-       This is more robust than fighting Tailwind's --tw-gradient-* variables. */
-    [data-theme="light"] .bg-clip-text.text-transparent {
-      -webkit-text-fill-color: #4A148C !important;
-      color: #4A148C !important;
-      background: none !important;
-      background-image: none !important;
+    /* Bottom Nav */
+    #bottomNav {
+      margin: 0 16px 24px 16px !important; background: var(--surface-1) !important; border-radius: 24px !important;
+      box-shadow: 0 8px 32px rgba(64,56,68,.1) !important; padding: 6px !important; border: none !important; gap: 4px; bottom: 0; left: 0; right: 0; position: fixed; z-index: 60; display: flex;
     }
-
-    /* --- Splitwise review banner had bg-slate-700 with white-ish text --- */
-    [data-theme="light"] #splitwiseReview { background-color: var(--surface-2) !important; color: var(--text) !important; }
-
-    /* --- The dialog cancel buttons (.bg-slate-600) — make white text amethyst --- */
-    [data-theme="light"] .bg-slate-600.text-white { color: var(--text-strong) !important; }
-
-    /* --- Inputs: ensure decent placeholder contrast --- */
-    [data-theme="light"] input,
-    [data-theme="light"] select,
-    [data-theme="light"] textarea {
-      color: var(--text-strong) !important;
+    .bn-btn {
+      flex: 1; border-radius: 18px !important; padding: 10px 4px !important; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; transition: all 0.2s; background: transparent !important; color: var(--text-muted) !important; border: none !important; min-width: 0; overflow: hidden;
     }
+    .bn-btn span { font-size: 10px !important; font-weight: 700 !important; color: var(--text-muted) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;}
+    .bn-btn svg { stroke: var(--text-muted) !important; color: var(--text-muted) !important; width: 24px !important; height: 24px !important; fill: none !important;}
+    .bn-btn.active { background: var(--pink-pale) !important; }
+    .bn-btn.active span { color: var(--surface-3) !important; }
+    .bn-btn.active svg { stroke: var(--surface-3) !important; color: var(--surface-3) !important; }
 
-    /* --- Hamburger top bar lines (animated icon) --- */
-    [data-theme="light"] #menuBtn span { background-color: var(--text-strong) !important; }
+    /* Hamburger Menu */
+    #menuBtn { background: var(--surface-1) !important; border: none !important; box-shadow: 0 4px 12px rgba(64,56,68,.05) !important; border-radius: 12px !important; padding: 10px !important; }
+    #menuBtn span { background: var(--text-dark) !important; height: 2px !important; margin-bottom: 4px !important; }
+    #menuPanel { background: var(--surface-1) !important; border-radius: 24px !important; box-shadow: -8px 0 24px rgba(64,56,68,.1) !important; border: none !important; padding: 20px 10px !important; right: 16px !important; top: 70px !important;}
+    #menuPanel button { color: var(--text-dark) !important; font-weight: 700 !important; border-radius: 12px !important; padding: 12px 16px !important; margin-bottom: 4px !important; border: 1px solid transparent !important; transition: all 0.1s;}
+    #menuPanel button:hover, #menuPanel button:active { background: var(--pink-pale) !important; border-color: var(--pink-border) !important; color: var(--surface-3) !important; }
+    #menuPanel button svg { opacity: 1 !important; color: inherit !important; }
 
-    /* --- Bottom-nav SVG icons --- */
-    [data-theme="light"] #bottomNav .bn-btn svg { color: var(--text); }
-    [data-theme="light"] #bottomNav .bn-btn.active svg { color: var(--text-strong); }
+    /* Dialogs / Modals */
+    .dialog-overlay { background: rgba(64,56,68,.6) !important; align-items: flex-end; justify-content: center; z-index: 150 !important; display: flex; position: fixed; inset: 0;}
+    .dialog-box { background: var(--surface-1) !important; border-radius: 24px 24px 0 0 !important; border: none !important; position: relative; width: 100%; max-width: none !important; padding: 28px 24px 36px !important; box-shadow: none !important; margin: 0 !important; }
+    @media (min-width: 768px) { .dialog-overlay { align-items: center; } .dialog-box { border-radius: 24px !important; max-width: 400px !important; } }
+    .dialog-box h3 { font-size: 18px !important; font-weight: 800 !important; margin-bottom: 6px !important; text-align: center; }
+    .dialog-box p.text-xs { font-size: 13px !important; color: var(--text-muted) !important; text-align: center; margin-bottom: 24px !important; font-weight: 600 !important; }
+
+    /* Logs */
+    .log-item { background: var(--surface-1) !important; border-radius: 14px !important; padding: 14px !important; box-shadow: 0 2px 6px rgba(64,56,68,.04) !important; border: 1px solid var(--border) !important; margin-bottom: 10px; color: var(--text-mid) !important; font-size: 12px !important;}
+    .log-item strong { color: var(--text-dark) !important; font-weight: 800 !important; font-size: 14px !important;}
+    .log-item .delete-btn { background: #fee2e2 !important; color: #991b1b !important; padding: 5px 8px !important; border-radius: 8px !important; font-size: 11px !important; font-weight: 700 !important; cursor: pointer; float: right; position: relative !important; right: 0 !important; top: 0 !important; text-decoration: none;}
+    .neg { color: var(--neg-color) !important; } .pos { color: var(--pos-color) !important; }
+
+    /* Login Page */
+    #loginPage { background: var(--lavender) !important; }
+    #loginPage .container { background: transparent !important; box-shadow: none !important; padding: 0 28px !important; border: none !important;}
+    #loginPage header h1 { font-size: 22px !important; color: var(--text-dark) !important; text-shadow: none !important; }
+    #loginPage header p { font-size: 13px !important; color: var(--text-muted) !important; font-weight: 600 !important; }
+
+    /* Protect Web Excel completely */
+    #webExcelSection { background: var(--surface-1) !important; border-radius: 20px !important; padding: 16px !important; box-shadow: var(--shadow-card) !important; }
+    #webExcelSection * { color: inherit; }
+    #webExcelSection .panel-hero-text h1, #webExcelSection .panel-hero-icon { color: var(--text-dark) !important; }
+    #wxTable { border-collapse: separate !important; border-spacing: 0 !important; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+    #wxTable th { background: var(--lavender) !important; color: var(--text-dark) !important; border: 1px solid var(--border) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+    #wxTable td { border: 1px solid var(--border) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
+    .wx-day-cell { color: var(--text-dark) !important; font-weight: 600 !important;}
+    .wx-day-cell[style*="color:#c0392b"] { color: var(--neg-color) !important; } /* Re-apply red for negative */
+    
+    /* Net Worth Tabs */
+    .tab-btn { background: var(--surface-2) !important; border: 1.5px solid var(--border) !important; color: var(--text-muted) !important; font-weight: 700 !important; border-radius: 20px !important; padding: 8px 14px !important; border-bottom: 1.5px solid var(--border) !important;}
+    .tab-btn.active { background: var(--pink-pale) !important; border-color: var(--pink-pale) !important; color: var(--surface-3) !important; }
+    
+    /* Helpers */
+    .calc-btn { background: var(--surface-2) !important; color: var(--text-dark) !important; border: 1px solid var(--border) !important; font-family: inherit !important; font-weight: 800 !important; border-radius: 12px !important; transition: all 0.15s;}
+    .calc-btn:active { background: var(--pink-pale) !important; color: var(--surface-3) !important; border-color: var(--pink-border) !important; transform: scale(0.95); }
+    #calc-display { background: var(--lavender) !important; color: var(--text-dark) !important; border-radius: 12px !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 800 !important;}
+    
+    /* Calendar UI */
+    #calendar-container, #calendar-container-income { background: var(--surface-1) !important; border: 1.5px solid var(--border) !important; border-radius: 16px !important; box-shadow: 0 8px 24px rgba(64,56,68,.14) !important; }
+    #calendar-container * { color: var(--text-dark) !important; }
+    .bg-blue-500 { background-color: var(--surface-3) !important; color: #fff !important; }
   </style>
 </head>
 <body class="min-h-screen" style="overflow-x:hidden;">
 
-<!-- Theme toggle (sun/moon) — sits next to hamburger -->
 <button id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle light/dark theme">
   <svg id="themeIconMoon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
   <svg id="themeIconSun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hidden"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.5-6.5l-.7.7M6.2 17.8l-.7.7m13-.7l.7.7M6.2 6.2l-.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
 </button>
 
-<!-- ============ LOGIN PAGE ============ -->
 <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:var(--app-bg);">
   <div class="container rounded-3xl shadow-2xl p-8 groovy-card w-full max-w-sm">
     <header class="text-center mb-8">
@@ -495,10 +291,8 @@
   </div>
 </div>
 
-<!-- ============ MAIN APP WRAPPER ============ -->
 <div id="mainApp" class="hidden flex items-center justify-center min-h-screen p-4 w-full">
 
-<!-- Hamburger -->
 <button id="menuBtn" aria-label="Menu"
   class="fixed top-4 right-4 z-50 p-3 rounded-xl border transition
          bg-[#3D363A] border-[#5A5157] text-[#F4E2C9] hover:bg-[#5A5157]">
@@ -556,7 +350,6 @@
   </div>
 </div>
 
-<!-- Hidden buttons that remain in the bottom-nav scope but stay clickable from JS -->
 <div id="hiddenNavSink" style="display:none;">
     <button id="navLogExpenses"></button>
     <button id="navLogIncome"></button>
@@ -565,7 +358,6 @@
     <button id="navLendCash"></button>
 </div>
 
-<!-- ============ BOTTOM NAVIGATION BAR (mobile only) ============ -->
 <nav id="bottomNav" aria-label="Quick navigation">
     <button class="bn-btn" data-target="navHome" type="button" aria-label="Home">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12l8.954-8.955a.75.75 0 011.06 0l8.955 8.955M3 10.5v9A2.25 2.25 0 005.25 21.75h13.5A2.25 2.25 0 0021 19.5v-9"/></svg>
@@ -576,7 +368,6 @@
         <span>Expense</span>
     </button>
     <button class="bn-btn" data-target="navLogIncome" type="button" aria-label="Income">
-        <!-- Wallet icon for income -->
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m0 0a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 9M3 9V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75V9"/></svg>
         <span>Income</span>
     </button>
@@ -598,11 +389,9 @@
     </button>
 </nav>
 
-<!-- ============ SPLIT-VIEW CONTAINER (desktop, when split-mode is on) ============ -->
 <div id="splitContainer">
 <div id="splitLeft">
 
-<!-- ============ HOME / LANDING PAGE ============ -->
 <div id="homeSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card">
   <header class="text-center mb-8">
     <h1 class="text-5xl md:text-6xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">
@@ -610,12 +399,10 @@
     </h1>
   </header>
   <div id="homeNavGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-    <!-- Navigation tiles will be generated by JS -->
-  </div>
+    </div>
 </div>
 
 
-<!-- ============ EXPENSES ============ -->
 <div id="expenseSection" class="section-page hidden">
   <div class="panel-hero">
     <div class="panel-hero-icon">
@@ -703,9 +490,9 @@
   </form>
 
   <div class="flex space-x-2 mt-4">
-    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg text-sm">Export CSV</button>
-    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg text-sm">🍩 Donut Chart</button>
-    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Clear Weekly</button>
+    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg text-sm groovy-button">Export CSV</button>
+    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg text-sm groovy-button">🍩 Donut Chart</button>
+    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm groovy-button">Clear Weekly</button>
   </div>
 
   <div class="text-center mt-6">
@@ -714,7 +501,6 @@
   <section id="expenseLog" class="mt-4 space-y-2 hidden"></section>
 </div>
 
-<!-- Donut Chart dialog -->
 <div id="donutChartDialog" class="dialog-overlay hidden">
   <div class="dialog-box !max-w-md">
     <div class="flex justify-between items-center mb-4">
@@ -730,7 +516,6 @@
   </div>
 </div>
 
-<!-- Splitwise dialog -->
 <div id="splitwiseDialog" class="dialog-overlay hidden">
   <div class="dialog-box space-y-4">
     <h3 class="text-xl font-semibold">Splitwise Adjustment</h3>
@@ -738,13 +523,12 @@
     <input type="number" id="splitwiseAmountInput" placeholder="e.g. -75" class="w-full p-3 rounded-xl">
     <input type="text" id="splitwiseDescInput" placeholder="Description (optional)" class="w-full p-3 rounded-xl">
     <div class="flex gap-2">
-      <button id="confirmSplitwiseBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl">Confirm</button>
+      <button id="confirmSplitwiseBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl groovy-button">Confirm</button>
       <button id="cancelSplitwiseBtn" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ============ INCOME ============ -->
 <div id="incomeSection" class="section-page hidden">
   <div class="panel-hero">
     <div class="panel-hero-icon">
@@ -756,8 +540,8 @@
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record JJP Salary</button>
-    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record EEM Salary</button>
+    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm bg-blue-600">Record JJP Salary</button>
+    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm bg-blue-600">Record EEM Salary</button>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
     <button id="btnQuickJJPInterest" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">💰 Credit Interest JJP</button>
@@ -819,7 +603,6 @@
   <section class="mt-8 space-y-2" id="incomeLog"></section>
 </div>
 
-<!-- ============ NET WORTH ============ -->
 <div id="netWorthSection" class="section-page hidden">
   <div class="panel-hero">
     <div class="panel-hero-icon">
@@ -833,8 +616,8 @@
   <header class="mb-4">
     <div class="mt-4 text-center p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-lg relative">
       <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
-      <p class="text-xs opacity-80">Overall Net Worth</p>
-      <p class="text-2xl font-extrabold text-white" style="text-shadow: 0 0 10px rgba(195, 180, 210, 0.4), 0 0 4px rgba(195, 180, 210, 0.2);">
+      <p class="text-xs opacity-80" style="color:var(--text-muted);font-weight:700;">Overall Net Worth</p>
+      <p class="text-2xl font-extrabold text-white" style="color:var(--text-dark) !important;font-size:28px !important;">
         <span id="overallNetWorth">$0.00</span>
       </p>
     </div>
@@ -846,25 +629,23 @@
     </div>
   </header>
 
-  <!-- Tabs -->
   <div id="nwTabsBar" class="mb-4">
     <div class="flex gap-2 overflow-x-auto pb-2">
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-assets">Primary Assets</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-cash">Lend/Cash</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-splitwise">Splitwise</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-liabilities">Liabilities</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl" data-tab="tab-assets">Primary Assets</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl" data-tab="tab-cash">Lend/Cash</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl" data-tab="tab-splitwise">Splitwise</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl" data-tab="tab-liabilities">Liabilities</button>
     </div>
   </div>
 
-  <!-- Panels -->
   <div id="tab-assets" class="nw-panel">
     <div class="grid grid-cols-2 gap-3 mb-3">
       <div class="mini-stat rounded-2xl p-3">
-        <div class="text-xs opacity-80 mb-1">Primary Asset Total</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Primary Asset Total</div>
         <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paTotal">$0.00</span></div>
       </div>
       <div class="mini-stat rounded-2xl p-3">
-        <div class="text-xs opacity-80 mb-1">Net Discrepancy</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Net Discrepancy</div>
         <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paNetDisc">$0.00</span></div>
       </div>
     </div>
@@ -878,9 +659,7 @@
     <div id="paRows" class="space-y-2"></div>
   </div>
 
-  <!-- Lend / Cash Holdings -->
   <div id="tab-cash" class="nw-panel hidden">
-    <!-- Hero header -->
     <div class="panel-hero">
       <div class="panel-hero-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -890,29 +669,26 @@
       </div>
     </div>
 
-    <!-- Totals -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
       <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Total (Lend + Cash)</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Total (Lend + Cash)</div>
         <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcTotal">$0.00</span></div>
       </div>
       <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Lend Subtotal</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Lend Subtotal</div>
         <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcLend">$0.00</span></div>
       </div>
       <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Cash Holdings Subtotal</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Cash Holdings Subtotal</div>
         <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcCash">$0.00</span></div>
       </div>
     </div>
 
-    <!-- Log -->
     <div class="p-4 rounded-2xl border border-[#5A5157]">
       <h2 class="text-xl font-semibold mb-2">Lend / Cash Holdings Log</h2>
       <section id="lcLog" class="space-y-2"></section>
     </div>
 
-    <!-- Add button at bottom -->
     <div class="mt-6 flex justify-center">
       <button id="lcAddBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
         Add Lend/Cash Holding
@@ -920,9 +696,7 @@
     </div>
   </div>
 
-  <!-- Splitwise -->
   <div id="tab-splitwise" class="nw-panel hidden">
-    <!-- Hero header -->
     <div class="panel-hero">
       <div class="panel-hero-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
@@ -934,7 +708,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-1 gap-3 mb-3">
       <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Splitwise Total</div>
+        <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Splitwise Total</div>
         <div class="text-2xl font-extrabold"><span id="swTotal">$0.00</span></div>
       </div>
     </div>
@@ -951,9 +725,7 @@
     </div>
   </div>
 
-  <!-- ===== LIABILITIES ===== -->
   <div id="tab-liabilities" class="nw-panel hidden">
-    <!-- Hero header -->
     <div class="panel-hero">
       <div class="panel-hero-icon">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
@@ -965,7 +737,7 @@
 
     <div class="grid grid-cols-1 max-w-xs mx-auto gap-3 mb-3">
         <div class="mini-stat rounded-2xl p-3">
-          <div class="text-xs opacity-80 mb-1">Total CC (Calculated)</div>
+          <div class="text-xs opacity-80 mb-1" style="font-weight:700;color:var(--text-muted);">Total CC (Calculated)</div>
           <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="ccTotalCalc">$0.00</span></div>
         </div>
       </div>
@@ -990,7 +762,6 @@
   </div>
 </div>
 
-<!-- ============ CONFIGURE BALANCES ============ -->
 <div id="configureSection" class="section-page hidden">
     <div class="panel-hero">
       <div class="panel-hero-icon">
@@ -1028,7 +799,6 @@
     </div>
 </div>
 
-<!-- ============ INFLOW OUTFLOW ============ -->
 <div id="inflowOutflowSection" class="section-page hidden">
   <div class="panel-hero">
     <div class="panel-hero-icon">
@@ -1040,10 +810,8 @@
   </div>
 </div>
 
-</div><!-- /#splitLeft -->
-<div id="splitRight">
+</div><div id="splitRight">
 
-<!-- ============ WEB EXCEL VIEW ============ -->
 <div id="webExcelSection" class="section-page hidden">
   <div class="panel-hero">
     <div class="panel-hero-icon">
@@ -1054,14 +822,12 @@
     </div>
   </div>
 
-  <!-- Week Navigation -->
   <div class="flex items-center justify-center gap-4 mb-3">
     <button id="wxPrevWeek" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&lt;</button>
     <span id="wxWeekLabel" class="text-sm font-semibold text-white"></span>
     <button id="wxNextWeek" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&gt;</button>
   </div>
 
-  <!-- Copy Buttons -->
   <div class="flex justify-end mb-2 gap-2 flex-wrap">
     <button id="wxCopyExpensesBtn" class="px-4 py-2 rounded-xl text-sm font-semibold groovy-button text-white flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
@@ -1073,7 +839,6 @@
     </button>
   </div>
 
-  <!-- Table -->
   <div class="overflow-x-auto rounded-xl">
     <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.72rem;table-layout:fixed;">
       <thead id="wxThead"></thead>
@@ -1084,12 +849,7 @@
   <p class="text-xs opacity-50 mt-3 text-center">Copy Expenses pastes the full grid (with a blank row break before the Splitwise section). Copy Splitwise pastes only the 3 splitwise rows (B–H).</p>
 </div>
 
-</div><!-- /#splitRight -->
-</div><!-- /#splitContainer -->
-
-
-<!-- ===== SALARY CONFIG DIALOG ===== -->
-<div id="salaryConfigDialog" class="dialog-overlay hidden">
+</div></div><div id="salaryConfigDialog" class="dialog-overlay hidden">
   <div class="dialog-box">
     <h3 class="text-xl font-semibold mb-3">Configure Quick Salaries</h3>
     <form id="salaryConfigForm" class="space-y-3">
@@ -1115,13 +875,11 @@
   </div>
 </div>
 
-<!-- ===== VIEW LOGS DIALOG ===== -->
 <div id="viewLogsDialog" class="dialog-overlay hidden">
     <div class="dialog-box max-h-[80vh] flex flex-col">
       <h3 class="text-xl font-semibold mb-3">Action Logs</h3>
       <div id="logsContainer" class="flex-grow overflow-y-auto pr-2 space-y-2 text-sm">
-        <!-- Logs will be injected here -->
-      </div>
+        </div>
       <div class="flex gap-2 pt-4">
         <button id="logsCloseBtn" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl">Close</button>
       </div>
@@ -1129,7 +887,6 @@
 </div>
 
 
-<!-- ===== CC Settlement Dialog ===== -->
 <div id="ccSettleDialog" class="dialog-overlay hidden">
   <div class="dialog-box">
     <h3 class="text-xl font-semibold mb-3">Record Credit Card Settlement</h3>
@@ -1157,7 +914,6 @@
   </div>
 </div>
 
-<!-- ===== Amex Pending Dialog ===== -->
 <div id="amexPendingDialog" class="dialog-overlay hidden">
   <div class="dialog-box">
     <h3 class="text-xl font-semibold mb-3">Record Amex Pending Transactions</h3>
@@ -1176,7 +932,6 @@
   </div>
 </div>
 
-<!-- ===== Basic Calculator Dialog ===== -->
 <div id="calculatorDialog" class="dialog-overlay hidden">
   <div class="dialog-box !p-3 !max-w-xs">
     <div class="bg-slate-800 rounded-lg p-2 w-full">
@@ -1201,7 +956,6 @@
 </div>
 
 
-<!-- ===== Lend/Cash Dialog ===== -->
 <div id="lcDialog" class="dialog-overlay hidden">
   <div class="dialog-box">
     <h3 class="text-xl font-semibold mb-3">Add Lend/Cash Holding</h3>
@@ -1239,7 +993,6 @@
   </div>
 </div>
 
-<!-- ===== Splitwise Settlement Dialog ===== -->
 <div id="swSettleDialog" class="dialog-overlay hidden">
   <div class="dialog-box">
     <h3 class="text-xl font-semibold mb-3">Record Splitwise Settlement</h3>
@@ -1263,9 +1016,7 @@
 
 <input type="file" id="importFileInput" class="hidden" accept=".json">
 
-</div><!-- /mainApp -->
-
-<script>
+</div><script>
   /* ===================== GLOBAL AND NAVIGATION ===================== */
   const menuBtn = document.getElementById('menuBtn');
   const menuPanel = document.getElementById('menuPanel');
@@ -2439,7 +2190,7 @@
       
       let actionHtml = '';
       if(name === 'Amex Credit') {
-          actionHtml = `<button class="w-full text-xs py-1 px-2 rounded-md bg-sky-600 hover:bg-sky-500 transition" data-action="amex-pending">Pending</button>`;
+          actionHtml = `<button class="w-full text-xs py-1 px-2 rounded-md bg-blue-600 hover:bg-blue-500 transition" data-action="amex-pending">Pending</button>`;
       }
 
       row.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center">
@@ -3211,33 +2962,3 @@
             msg = 'Incorrect email or password. Make sure you created your user under Authentication → Users in the Supabase dashboard.';
           }
           showErr(msg);
-          loginBtn.disabled = false;
-          loginLoadingMsg.classList.add('hidden');
-        }
-        // On success → SIGNED_IN event fires above → showApp(session) takes over
-      } catch (err) {
-        showErr('Network error — check your internet connection and try again.');
-        loginBtn.disabled = false;
-        loginLoadingMsg.classList.add('hidden');
-      }
-    });
-
-    // Enter key submits
-    [loginEmail, loginPass].forEach(el => {
-      el.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
-    });
-
-    // ── 4. Logout ────────────────────────────────────────────────────────────
-    document.getElementById('navLogout').addEventListener('click', async () => {
-      _currentUserId = null;
-      Object.keys(_dbCache).forEach(k => delete _dbCache[k]);
-      await _supabase.auth.signOut();
-      menuPanel.classList.add('hidden');
-    });
-  })();
-
-</script>
-
-
-</body>
-</html>
