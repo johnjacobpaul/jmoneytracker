@@ -6,6 +6,7 @@
   <title>J Money Tracker - V4.6.15</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script>
@@ -119,30 +120,34 @@
       --danger:        #f87171;
     }
     [data-theme="light"] {
-      /* Light theme — soft lavender background, amethyst text */
-      --app-bg:        #EDE7F6;   /* light lavender canvas */
-      --surface-1:     #FFFFFF;   /* primary card / menu / dialog */
-      --surface-2:     #F4EFFB;   /* nested card / mini-stat / nw-row */
-      --surface-3:     #D1C4E9;   /* button base / borders */
-      --surface-3-hov: #B39DDB;
-      --border:        #C5B6E0;
-      --border-soft:   rgba(106, 27, 154, 0.18);
-      --text:          #6A1B9A;   /* amethyst */
-      --text-strong:   #4A148C;   /* deeper amethyst for headings */
-      --text-muted:    rgba(106, 27, 154, 0.6);
-      --input-bg:      rgba(255,255,255,.85);
-      --placeholder:   rgba(106, 27, 154, 0.45);
-      --shadow-card:   0 4px 14px rgba(74, 20, 140, 0.10);
-      --shadow-button: 0 3px 10px rgba(74, 20, 140, 0.14);
-      --shadow-hero:   0 3px 14px rgba(74, 20, 140, 0.10);
-      --hero-bg:       linear-gradient(135deg, rgba(149, 117, 205, 0.12) 0%, rgba(179, 157, 219, 0.06) 100%);
-      --hero-icon-bg:  linear-gradient(135deg, #B39DDB 0%, #D1C4E9 100%);
-      --hero-icon-ring: rgba(74, 20, 140, 0.18);
-      --bn-bg:         #F4EFFB;
-      --bn-active:     #D1C4E9;
-      --pos-color:     #B91C1C;
-      --neg-color:     #15803D;
-      --danger:        #b91c1c;
+      /* Light theme — adapted from reference.html
+         lavender canvas, white cards, magenta accent, charcoal text */
+      --app-bg:        #f0ebf5;   /* lavender canvas */
+      --surface-1:     #ffffff;   /* primary card / menu / dialog */
+      --surface-2:     #fcfbfe;   /* offwhite — nested card / mini-stat / nw-row */
+      --surface-3:     #f9e6f1;   /* pink-pale — button base */
+      --surface-3-hov: #f1bddd;   /* pink-border — button hover */
+      --border:        #e4dcf0;
+      --border-soft:   rgba(184, 18, 115, 0.14);
+      --text:          #685972;   /* purple-mid */
+      --text-strong:   #403844;   /* charcoal — headings */
+      --text-muted:    #958a9e;
+      --input-bg:      #ffffff;
+      --placeholder:   #958a9e;
+      --shadow-card:   0 2px 8px rgba(64, 56, 68, 0.04);
+      --shadow-button: 0 4px 12px rgba(64, 56, 68, 0.05);
+      --shadow-hero:   0 4px 12px rgba(64, 56, 68, 0.05);
+      --hero-bg:       #ffffff;
+      --hero-icon-bg:  linear-gradient(135deg, #f9e6f1 0%, #f1bddd 100%);
+      --hero-icon-ring: rgba(184, 18, 115, 0.18);
+      --bn-bg:         #ffffff;
+      --bn-active:     #f9e6f1;
+      --pos-color:     #ef4444;
+      --neg-color:     #16a34a;
+      --danger:        #ef4444;
+      /* Magenta accent for primary actions in light mode */
+      --accent:        #b81273;
+      --accent-hov:    #d63d95;
     }
 
     body { font-family: 'Inter', sans-serif; background: var(--app-bg); color: var(--text); transition: background .25s ease, color .25s ease; }
@@ -160,13 +165,13 @@
     .section-page {
       max-width: 100%;
       margin: 0;
-      padding: 16px 16px 20px;
+      padding: 20px 20px 24px;
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
     }
     @media (min-width: 768px) {
-      .section-page { padding: 20px 24px 28px; }
+      .section-page { padding: 24px 28px 32px; }
     }
     /* Net Worth dedicated-view: nw-panels inherit section-page edges (no extra inset) */
     #netWorthSection.dedicated-view .nw-panel { padding: 0; }
@@ -320,6 +325,15 @@
       .bn-btn svg { width: 22px; height: 22px; }
       /* Bottom nav on desktop should not be ridiculously wide — center to a reasonable max */
       #bottomNav { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+      /* When split-mode is active, the bottom nav lives only under the left 30% pane.
+         This frees the entire 70% right pane for the Excel grid and makes the left
+         pane feel like a self-contained mobile-app surface. */
+      body.split-mode #bottomNav {
+        left: 0;
+        right: auto;
+        width: 30%;
+        border-right: 1px solid var(--border);
+      }
     }
 
     /* === Cell-note indicator in Web Excel View === */
@@ -353,6 +367,7 @@
         min-width: 0;
         overflow-x: auto;
         padding-left: 8px;
+        padding-bottom: 0;
         position: sticky;
         top: 0;
         max-height: 100vh;
@@ -441,11 +456,11 @@
 
     /* --- "J Money Tracker" gradient title — special case ---
        The HTML uses bg-clip-text + text-transparent + a Tailwind gradient.
-       In light mode, swap the WebKit text fill to a solid amethyst directly.
-       This is more robust than fighting Tailwind's --tw-gradient-* variables. */
+       In light mode, swap the WebKit text fill to a solid charcoal so the
+       title is readable on the lavender canvas. */
     [data-theme="light"] .bg-clip-text.text-transparent {
-      -webkit-text-fill-color: #4A148C !important;
-      color: #4A148C !important;
+      -webkit-text-fill-color: #403844 !important;
+      color: #403844 !important;
       background: none !important;
       background-image: none !important;
     }
@@ -462,6 +477,55 @@
     [data-theme="light"] textarea {
       color: var(--text-strong) !important;
     }
+
+    /* === Light theme — reference.html flourishes ===
+       (apply the Plus Jakarta Sans font, magenta primary accent, and softer
+        card borders only when light theme is active) */
+    [data-theme="light"] body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
+    [data-theme="light"] .groovy-card,
+    [data-theme="light"] .mini-stat,
+    [data-theme="light"] .nw-row,
+    [data-theme="light"] .dialog-box {
+      border: 1px solid var(--border) !important;
+    }
+    /* Magenta primary actions */
+    [data-theme="light"] .groovy-button {
+      background: var(--accent) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 16px rgba(184, 18, 115, 0.25) !important;
+    }
+    [data-theme="light"] .groovy-button:hover {
+      background: var(--accent-hov) !important;
+    }
+    [data-theme="light"] .groovy-button:disabled {
+      background: var(--surface-3) !important;
+      color: var(--text-muted) !important;
+      box-shadow: none !important;
+    }
+    /* Bottom-nav active state in light mode — soft pink instead of dark surface */
+    [data-theme="light"] .bn-btn.active { background: var(--surface-3) !important; color: var(--accent) !important; }
+    [data-theme="light"] .bn-btn.active svg { color: var(--accent) !important; }
+    /* Tab pill active state in light mode */
+    [data-theme="light"] .tab-btn.active { border-color: var(--accent) !important; color: var(--accent) !important; }
+    /* Hamburger menu in light mode — clean white, charcoal text */
+    [data-theme="light"] #menuPanel { color: var(--text-strong) !important; }
+    [data-theme="light"] #menuBtn { background: var(--white, #ffffff) !important; border-color: var(--border) !important; }
+    [data-theme="light"] #menuBtn span { background-color: var(--text-strong) !important; }
+    /* Theme toggle button in light mode */
+    [data-theme="light"] #themeToggle { background: #ffffff !important; border-color: var(--border) !important; color: var(--text-strong) !important; }
+    /* Section page panel-hero icon in light mode — soft pink wash */
+    [data-theme="light"] .panel-hero .panel-hero-icon { color: var(--accent) !important; }
+    /* The hard-coded "groovy-button" classes used for Record Tally / Save Balances etc.
+       inherit the magenta override above, but they often pair with text-white inline —
+       ensure the white survives */
+    [data-theme="light"] .groovy-button.text-white { color: #ffffff !important; }
+    /* Record-tally bordered button — convert to subtle white card */
+    [data-theme="light"] #recordTallyBtn {
+      background: var(--white, #ffffff) !important;
+      border-color: var(--border) !important;
+      color: var(--text-strong) !important;
+    }
+    [data-theme="light"] #recordTallyBtn:hover { background: var(--surface-3) !important; }
 
     /* --- Hamburger top bar lines (animated icon) --- */
     [data-theme="light"] #menuBtn span { background-color: var(--text-strong) !important; }
@@ -1091,7 +1155,7 @@
 
   <!-- Table -->
   <div class="overflow-x-auto rounded-xl">
-    <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.66rem;table-layout:fixed;">
+    <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.62rem;table-layout:fixed;line-height:1;">
       <thead id="wxThead"></thead>
       <tbody id="wxTbody"></tbody>
     </table>
@@ -2806,9 +2870,9 @@
     // Uniform cell dimensions — applied to every label, header, and day cell
     const CELL_W = 64;       // px — day cell width
     const LABEL_W = 130;     // px — first column (label)
-    const CELL_H = 22;       // px — uniform row height (compact for single-screen view)
-    const LABEL_STYLE  = `background:#2F2A2D;color:#F4E2C9;font-weight:600;padding:0 6px;text-align:center;vertical-align:middle;border:1px solid #5A5157;white-space:nowrap;font-size:0.66rem;width:${LABEL_W}px;height:${CELL_H}px;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;`;
-    const HEADER_STYLE = `background:#3D363A;color:#F4E2C9;font-weight:700;padding:0 4px;text-align:center;border:1px solid #5A5157;height:${CELL_H}px;font-size:0.68rem;box-sizing:border-box;`;
+    const CELL_H = 18;       // px — uniform row height (very compact, single-screen view)
+    const LABEL_STYLE  = `background:#2F2A2D;color:#F4E2C9;font-weight:600;padding:0 6px;text-align:center;vertical-align:middle;border:1px solid #5A5157;white-space:nowrap;font-size:0.62rem;width:${LABEL_W}px;height:${CELL_H}px;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;`;
+    const HEADER_STYLE = `background:#3D363A;color:#F4E2C9;font-weight:700;padding:0 4px;text-align:center;border:1px solid #5A5157;height:${CELL_H}px;font-size:0.62rem;box-sizing:border-box;line-height:1;`;
 
     const DAYS = ['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
 
@@ -2988,7 +3052,7 @@
         }
 
         const colorStyle = COLOR_STYLES[rowDef.color] || '';
-        const cellBase = `${colorStyle}padding:0 4px;text-align:right;border:1px solid #ccc;width:${CELL_W}px;height:${CELL_H}px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;`;
+        const cellBase = `${colorStyle}padding:0 4px;text-align:right;border:1px solid #ccc;width:${CELL_W}px;height:${CELL_H}px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;line-height:1;`;
 
         // Day cells
         isoList.forEach(iso => {
