@@ -114,6 +114,85 @@
   border: 1px solid #5A5157; background: #3D363A; color: #F4E2C9;
 }
 .unblur-toggle:hover { background:#5A5157; }
+    /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
+    /* When this class is present on netWorthSection, the section's main
+       header and the tab-bar are hidden, making each tab a standalone page. */
+    #netWorthSection.dedicated-view > header { display: none !important; }
+    #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
+
+    /* === Bottom navigation bar === */
+    #bottomNav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #2F2A2D;
+      border-top: 1px solid #5A5157;
+      z-index: 60;
+      padding: 6px 4px env(safe-area-inset-bottom) 4px;
+      display: flex;
+      gap: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #bottomNav::-webkit-scrollbar { display: none; }
+    .bn-btn {
+      flex: 0 0 auto;
+      min-width: 64px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: transparent;
+      color: #C3B4A8;
+      font-size: 0.65rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: background 120ms;
+    }
+    .bn-btn:hover { background: #3D363A; }
+    .bn-btn.active { background: #5A5157; color: #F4E2C9; }
+    .bn-btn svg { width: 22px; height: 22px; }
+    .bn-btn span { white-space: nowrap; }
+    /* Reserve space at bottom of every section so nothing is hidden by bottom nav */
+    body { padding-bottom: 84px; }
+
+    /* === Settings panel === */
+    #settingsPanel {
+      position: fixed;
+      bottom: 80px;
+      right: 8px;
+      z-index: 65;
+      width: 240px;
+      background: #3D363A;
+      border: 1px solid #5A5157;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+    #settingsPanel .settings-link {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%;
+      padding: 12px 14px;
+      color: #C3B4A8;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+    #settingsPanel .settings-link:hover { background: #5A5157; }
+    #settingsPanel .settings-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* === Cell-note indicator in Web Excel View === */
+    .wx-day-cell.has-note { position: relative; }
+    .wx-day-cell.has-note::after {
+      content: "";
+      position: absolute;
+      top: 0; right: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 0 6px 6px 0;
+      border-color: transparent #c0392b transparent transparent;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="min-h-screen" style="background:#1C1938; overflow-x:hidden;">
@@ -194,48 +273,80 @@
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         Lend/Cash
     </button>
-    <button id="navNetWorth" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-        Report Closing Balance
-    </button>
-    <button id="navInflowOutflow" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-1.5L21 9m0 0L16.5 4.5M21 9H3" />
-        </svg>
-        Home/Inflow Outflow
-    </button>
-    <button id="navAnalytics" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-        Web Excel View
-    </button>
-  </div>
-  <div class="border-t border-[#5A5157] mt-2 pt-2">
-    <button id="navViewLogs" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-        View Logs
-    </button>
-    <button id="navExportData" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-        </svg>
-        Export All Data
-    </button>
-    <button id="navImportData" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-        </svg>
-        Import All Data
-    </button>
-    <button id="navClearData" class="w-full text-left px-4 py-3 text-red-400 hover:bg-red-900/50 flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        Clear All App Data
-    </button>
-    <button id="navLogout" class="w-full text-left px-4 py-3 text-orange-400 hover:bg-orange-900/30 flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-        Sign Out
-    </button>
   </div>
 </div>
+
+<!-- ============ SETTINGS PANEL (opened via bottom-nav gear) ============ -->
+<div id="settingsPanel" class="hidden">
+    <button id="navNetWorth" class="settings-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+        Report Closing Balance
+    </button>
+    <button id="navAnalytics" class="settings-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+        Web Excel View
+    </button>
+    <div class="border-t border-[#5A5157] my-1"></div>
+    <button id="navViewLogs" class="settings-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+        View Logs
+    </button>
+    <button id="navExportData" class="settings-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+        Export All Data
+    </button>
+    <button id="navImportData" class="settings-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+        Import All Data
+    </button>
+    <div class="border-t border-[#5A5157] my-1"></div>
+    <button id="navClearData" class="settings-link" style="color:#fca5a5;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        Clear All App Data
+    </button>
+    <button id="navLogout" class="settings-link" style="color:#fdba74;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+        Sign Out
+    </button>
+    <!-- Hidden — Inflow/Outflow currently a placeholder, kept here so the click handler can still bind. -->
+    <button id="navInflowOutflow" style="display:none;"></button>
+</div>
+
+<!-- ============ BOTTOM NAVIGATION BAR ============ -->
+<nav id="bottomNav" aria-label="Quick navigation">
+    <button class="bn-btn" data-target="navHome" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 12l8.954-8.955a.75.75 0 011.06 0l8.955 8.955M3 10.5v9A2.25 2.25 0 005.25 21.75h13.5A2.25 2.25 0 0021 19.5v-9"/></svg>
+        <span>Home</span>
+    </button>
+    <button class="bn-btn" data-target="navConfigure" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Configure</span>
+    </button>
+    <button class="bn-btn" data-target="navLogExpenses" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Expenses</span>
+    </button>
+    <button class="bn-btn" data-target="navLogIncome" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Income</span>
+    </button>
+    <button class="bn-btn" data-target="navSplitwise" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        <span>Splitwise</span>
+    </button>
+    <button class="bn-btn" data-target="navLiabilities" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        <span>Liabilities</span>
+    </button>
+    <button class="bn-btn" data-target="navLendCash" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Lend/Cash</span>
+    </button>
+    <button class="bn-btn" id="bnSettings" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+        <span>More</span>
+    </button>
+</nav>
 
 <!-- ============ HOME / LANDING PAGE ============ -->
 <div id="homeSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card">
@@ -471,7 +582,7 @@
   </header>
 
   <!-- Tabs -->
-  <div class="mb-4">
+  <div id="nwTabsBar" class="mb-4">
     <div class="flex gap-2 overflow-x-auto pb-2">
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-assets">Primary Assets</button>
       <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-cash">Lend/Cash</button>
@@ -711,6 +822,10 @@
     <h3 class="text-xl font-semibold mb-3">Record Credit Card Settlement</h3>
     <div class="space-y-3">
       <div>
+        <label class="label-sm" for="ccSettleDate">Settlement Date</label>
+        <input id="ccSettleDate" type="date" class="w-full p-3 mt-1 rounded-lg">
+      </div>
+      <div>
         <label class="label-sm" for="ccSettleAmount">Settlement Amount</label>
         <input id="ccSettleAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., 250.75">
       </div>
@@ -851,6 +966,20 @@
   
   const allSections = [homeSection, expenseSection, incomeSection, netWorthSection, configureSection, inflowOutflowSection, webExcelSection];
 
+  // === Settings panel (opened via bottom-nav "More") ===
+  const settingsPanel = document.getElementById('settingsPanel');
+  const bnSettings = document.getElementById('bnSettings');
+  bnSettings.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsPanel.classList.toggle('hidden');
+  });
+  document.addEventListener('click', (e) => {
+    if (!settingsPanel.contains(e.target) && !bnSettings.contains(e.target)) {
+        settingsPanel.classList.add('hidden');
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') settingsPanel.classList.add('hidden'); });
+
   menuBtn.addEventListener('click', () => menuPanel.classList.toggle('hidden'));
   document.addEventListener('click', (e) => {
     if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) {
@@ -859,41 +988,74 @@
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menuPanel.classList.add('hidden'); });
 
-  function showSection(section) {
+  // Mark which nav button is active in the bottom bar
+  function setActiveBottomNav(navId) {
+    document.querySelectorAll('#bottomNav .bn-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.target === navId);
+    });
+  }
+
+  function showSection(section, opts) {
+    opts = opts || {};
     allSections.forEach(s => s.classList.add('hidden'));
     section.classList.remove('hidden');
     menuPanel.classList.add('hidden');
+    settingsPanel.classList.add('hidden');
+
+    // Toggle dedicated-view styling on netWorthSection.
+    // dedicated=true → hides the section header & tab bar so the panel stands alone.
+    if (section === netWorthSection) {
+      netWorthSection.classList.toggle('dedicated-view', !!opts.dedicated);
+    } else {
+      netWorthSection.classList.remove('dedicated-view');
+    }
+
+    if (opts.activeNav) setActiveBottomNav(opts.activeNav);
   }
 
-  document.getElementById('navHome').onclick = () => showSection(homeSection);
-  document.getElementById('navConfigure').onclick = () => showSection(configureSection);
+  document.getElementById('navHome').onclick = () => showSection(homeSection, { activeNav: 'navHome' });
+  document.getElementById('navConfigure').onclick = () => showSection(configureSection, { activeNav: 'navConfigure' });
   document.getElementById('navLogExpenses').onclick = () => {
-    showSection(expenseSection);
+    showSection(expenseSection, { activeNav: 'navLogExpenses' });
     updateExpenseViewForWeek(getWeekStart());
   };
-  document.getElementById('navLogIncome').onclick = () => showSection(incomeSection);
+  document.getElementById('navLogIncome').onclick = () => showSection(incomeSection, { activeNav: 'navLogIncome' });
   document.getElementById('navNetWorth').onclick = () => {
-    showSection(netWorthSection);
+    // Report Closing Balance — full Net Worth view (header + tabs visible)
+    showSection(netWorthSection, { dedicated: false });
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-assets"]'));
+    setActiveBottomNav(null);
   };
   document.getElementById('navSplitwise').onclick = () => {
-    showSection(netWorthSection);
+    showSection(netWorthSection, { dedicated: true, activeNav: 'navSplitwise' });
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-splitwise"]'));
   };
   document.getElementById('navLiabilities').onclick = () => {
-    showSection(netWorthSection);
+    showSection(netWorthSection, { dedicated: true, activeNav: 'navLiabilities' });
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-liabilities"]'));
   };
   document.getElementById('navLendCash').onclick = () => {
-    showSection(netWorthSection);
+    showSection(netWorthSection, { dedicated: true, activeNav: 'navLendCash' });
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-cash"]'));
   };
   document.getElementById('navInflowOutflow').onclick = () => showSection(inflowOutflowSection);
-  document.getElementById('navAnalytics').onclick = () => { showSection(webExcelSection); renderWebExcel(); };
+  document.getElementById('navAnalytics').onclick = () => {
+    showSection(webExcelSection);
+    renderWebExcel();
+    setActiveBottomNav(null);
+  };
+
+  // Bottom-nav buttons delegate to the matching hamburger nav buttons.
+  document.querySelectorAll('#bottomNav .bn-btn[data-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (target) target.click();
+    });
+  });
   document.getElementById('navClearData').onclick = async () => {
     if (confirm('⚠️ DANGER! This will permanently delete ALL data from the tracker. This cannot be undone. Are you absolutely sure?')) {
         await dbClear();
@@ -1922,7 +2084,14 @@
   const ccSettleCancel = document.getElementById('ccSettleCancel');
   const ccSettlementLog = document.getElementById('ccSettlementLog');
   let ccSettlements = getData('nwCcSettlements', []);
-  function openCcSettle(){ ccSettleAmount.value = ""; ccSettleCard.value = "Amex Credit"; ccSettleDialog.classList.remove('hidden'); }
+  function openCcSettle(){
+    const today = new Date();
+    const isoToday = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    document.getElementById('ccSettleDate').value = isoToday;
+    ccSettleAmount.value = "";
+    ccSettleCard.value = "Amex Credit";
+    ccSettleDialog.classList.remove('hidden');
+  }
   function closeCcSettle(){ ccSettleDialog.classList.add('hidden'); }
   ccSettleBtn.addEventListener('click', openCcSettle);
   ccSettleCancel.addEventListener('click', closeCcSettle);
@@ -1942,8 +2111,8 @@
   ccSettleSave.addEventListener('click', () => {
     const amt = parseFloat(ccSettleAmount.value || '0');
     if (isNaN(amt) || amt <= 0) { alert('Please enter a valid settlement amount.'); return; }
-    const now = new Date();
-    const iso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const iso = document.getElementById('ccSettleDate').value;
+    if (!iso) { alert('Please pick a settlement date.'); return; }
     ccSettlements.push({ id: Date.now() + Math.random(), date: iso, amount: Math.round(amt*100)/100, card: ccSettleCard.value });
     saveCcSettlements(); renderCcSettlementLog(); closeCcSettle();
   });
@@ -2245,15 +2414,19 @@
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
+    // Returns an array of {amount, note} objects for the given row+date.
+    // Multiple entries on the same day produce multiple objects in display order.
     function getAmounts(rowDef, dateStr) {
       const {src, cat, modeFilter, negate} = rowDef;
       const sign = negate ? -1 : 1;
       let raw = [];
 
+      const wrap = (amount, desc) => ({ amount: amount * sign, note: desc || '' });
+
       if (src === 'income') {
         raw = getData('incomeData', [])
           .filter(e => e.date === dateStr && e.category === cat)
-          .map(e => e.amount * sign);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'expense') {
         raw = getData('expensesData', [])
@@ -2264,7 +2437,16 @@
             if (modeFilter === 'debit' && !DEBIT_MODES.has(e.mode)) return false;
             return true;
           })
-          .map(e => e.amount * sign);
+          .map(e => wrap(e.amount, e.desc));
+
+        // CC Settlement also flows in via the dedicated "Record CC Settlement" dialog,
+        // which writes to nwCcSettlements. Merge those in for this category.
+        if (cat === 'CC Settlement') {
+          const fromCc = getData('nwCcSettlements', [])
+            .filter(e => e.date === dateStr)
+            .map(e => wrap(e.amount, e.note || `Settled against ${e.card || ''}`.trim()));
+          raw = raw.concat(fromCc);
+        }
 
       } else if (src === 'sw_splitwise') {
         raw = getData('expensesData', [])
@@ -2274,48 +2456,57 @@
             if (modeFilter === 'debit' && !DEBIT_MODES.has(e.mode)) return false;
             return true;
           })
-          .map(e => e.amount * sign);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'sw_settled') {
         raw = getData('nwSplitwiseSettlements', [])
           .filter(e => e.date === dateStr)
-          .map(e => e.amount);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_cc') {
         // Lend/Cash Holding entries on a credit-card payment mode (any sign)
         raw = getData('nwLendCash', [])
           .filter(e => e.date === dateStr && CC_MODES.has(e.mode))
-          .map(e => e.amount);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_debit_neg') {
         // Lend/Cash Holding entries on a debit payment mode where amount is negative
         raw = getData('nwLendCash', [])
           .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount < 0)
-          .map(e => e.amount);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_debit_pos') {
         // Lend/Cash Holding entries on a debit payment mode where amount is positive
         raw = getData('nwLendCash', [])
           .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount > 0)
-          .map(e => e.amount);
+          .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'none') {
-        // Placeholder row — no automatic data feed (user fills in spreadsheet manually)
         raw = [];
       }
 
-      return raw.map(v => Math.round(v * 100) / 100).filter(v => v !== 0);
+      return raw
+        .map(o => ({ amount: Math.round(o.amount * 100) / 100, note: o.note }))
+        .filter(o => o.amount !== 0);
     }
 
-    function toCopyVal(amounts) {
-      if (amounts.length === 0) return '';
-      if (amounts.length === 1) return String(amounts[0]);
-      return '=' + amounts.join('+');
+    function toCopyVal(entries) {
+      if (entries.length === 0) return '';
+      if (entries.length === 1) return String(entries[0].amount);
+      return '=' + entries.map(e => e.amount).join('+');
     }
 
-    function toDisplayVal(amounts) {
-      if (amounts.length === 0) return '';
-      return amounts.reduce((s,v) => s+v, 0).toFixed(2);
+    function toDisplayVal(entries) {
+      if (entries.length === 0) return '';
+      return entries.reduce((s,e) => s + e.amount, 0).toFixed(2);
+    }
+
+    // Combine multiple entry notes into one tooltip / Excel comment.
+    function toNoteVal(entries) {
+      const lines = entries
+        .filter(e => e.note && e.note.trim())
+        .map(e => `${e.amount.toFixed(2)}: ${e.note.trim()}`);
+      return lines.join('\n');
     }
 
     function renderWebExcel() {
@@ -2387,12 +2578,18 @@
 
         // Day cells
         isoList.forEach(iso => {
-          const amounts = getAmounts(rowDef, iso);
+          const entries = getAmounts(rowDef, iso);
           const td = document.createElement('td');
           td.className = 'wx-day-cell';
-          td.dataset.copyValue = toCopyVal(amounts);
+          td.dataset.copyValue = toCopyVal(entries);
+          const note = toNoteVal(entries);
+          if (note) {
+            td.dataset.note = note;
+            td.title = note;            // browser hover tooltip
+            td.classList.add('has-note');
+          }
           td.style.cssText = cellBase;
-          const dv = toDisplayVal(amounts);
+          const dv = toDisplayVal(entries);
           td.textContent = dv;
           // Colour negative values red for quick visual scan
           if (dv && parseFloat(dv) < 0) td.style.color = '#c0392b';
@@ -2403,12 +2600,56 @@
       });
     }
 
-    // Helper: build TSV lines from a NodeList of rows
-    function rowsToTsv(rows) {
-      return Array.from(rows).map(row => {
+    // Build TSV (plain text) and HTML (with title attributes) representations
+    // of a row set, so we can write both formats to the clipboard at once.
+    // Excel reads HTML when pasting and *may* preserve title attributes as
+    // cell notes — this depends on the Excel version (often it does not, in
+    // which case the TSV plain-text fallback is used and notes are lost).
+    function rowsToClipboard(rows) {
+      const tsvLines = [];
+      const htmlRows = [];
+      Array.from(rows).forEach(row => {
         const cells = row.querySelectorAll('.wx-day-cell');
-        return Array.from(cells).map(c => c.dataset.copyValue || '').join('\t');
-      }).join('\n');
+        const tsvCells = [];
+        const htmlCells = [];
+        Array.from(cells).forEach(c => {
+          const v = c.dataset.copyValue || '';
+          const note = c.dataset.note || '';
+          tsvCells.push(v);
+          const safeNote = note.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          const safeV = v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          if (note) {
+            htmlCells.push(`<td title="${safeNote}" data-comment="${safeNote}">${safeV}</td>`);
+          } else {
+            htmlCells.push(`<td>${safeV}</td>`);
+          }
+        });
+        tsvLines.push(tsvCells.join('\t'));
+        htmlRows.push(`<tr>${htmlCells.join('')}</tr>`);
+      });
+      const tsv = tsvLines.join('\n');
+      const html = `<table>${htmlRows.join('')}</table>`;
+      return { tsv, html };
+    }
+
+    async function writeBothFormats(tsv, html) {
+      // Modern Clipboard API supports multi-format. Fall back to writeText otherwise.
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          const item = new ClipboardItem({
+            'text/plain': new Blob([tsv], { type: 'text/plain' }),
+            'text/html':  new Blob([html], { type: 'text/html' })
+          });
+          await navigator.clipboard.write([item]);
+          return true;
+        }
+        await navigator.clipboard.writeText(tsv);
+        return true;
+      } catch (err) {
+        console.warn('Clipboard write failed, falling back to writeText:', err);
+        try { await navigator.clipboard.writeText(tsv); return true; }
+        catch (e2) { return false; }
+      }
     }
 
     function flashCopied(btn) {
@@ -2417,26 +2658,30 @@
       setTimeout(() => btn.innerHTML = orig, 2000);
     }
 
-    // Copy Expenses: all rows top-to-bottom in B–H format,
-    // with a blank row break between the expenses block and the splitwise block.
-    document.getElementById('wxCopyExpensesBtn').addEventListener('click', () => {
+    // Copy Expenses: all expense rows + blank break + splitwise rows
+    document.getElementById('wxCopyExpensesBtn').addEventListener('click', async () => {
       const expenseRows  = document.querySelectorAll('.wx-expense-row');
       const splitwiseRows = document.querySelectorAll('.wx-splitwise-row');
-      const blankCols    = Array(7).fill('').join('\t'); // 7 empty day cells
-      const parts = [];
-      if (expenseRows.length)   parts.push(rowsToTsv(expenseRows));
-      if (splitwiseRows.length) { parts.push(blankCols); parts.push(rowsToTsv(splitwiseRows)); }
-      navigator.clipboard.writeText(parts.join('\n')).then(() => {
-        flashCopied(document.getElementById('wxCopyExpensesBtn'));
-      }).catch(() => alert('Copy failed — please select the table manually and copy.'));
+      const expensePart   = rowsToClipboard(expenseRows);
+      const splitwisePart = rowsToClipboard(splitwiseRows);
+      const blankTsv  = Array(7).fill('').join('\t');
+      const blankHtml = '<tr>' + Array(7).fill('<td></td>').join('') + '</tr>';
+      const tsv  = [expensePart.tsv, blankTsv, splitwisePart.tsv].filter(x => x.length).join('\n');
+      const html = '<table>' + (expensePart.html.replace(/^<table>|<\/table>$/g,'')) +
+                              blankHtml +
+                              (splitwisePart.html.replace(/^<table>|<\/table>$/g,'')) +
+                   '</table>';
+      const ok = await writeBothFormats(tsv, html);
+      if (ok) flashCopied(document.getElementById('wxCopyExpensesBtn'));
+      else alert('Copy failed — please select the table manually and copy.');
     });
 
-    // Copy Splitwise: only the 3 splitwise rows in B–H format.
-    document.getElementById('wxCopySplitwiseBtn').addEventListener('click', () => {
-      const splitwiseRows = document.querySelectorAll('.wx-splitwise-row');
-      navigator.clipboard.writeText(rowsToTsv(splitwiseRows)).then(() => {
-        flashCopied(document.getElementById('wxCopySplitwiseBtn'));
-      }).catch(() => alert('Copy failed — please select the table manually and copy.'));
+    // Copy Splitwise: only the 3 splitwise rows
+    document.getElementById('wxCopySplitwiseBtn').addEventListener('click', async () => {
+      const { tsv, html } = rowsToClipboard(document.querySelectorAll('.wx-splitwise-row'));
+      const ok = await writeBothFormats(tsv, html);
+      if (ok) flashCopied(document.getElementById('wxCopySplitwiseBtn'));
+      else alert('Copy failed — please select the table manually and copy.');
     });
 
     // Week navigation
