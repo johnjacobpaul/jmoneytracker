@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>J Money Tracker - V4.6.15</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: var(--bg, #1C1938); color: #C3B4A8; }
+    .container { max-width: 650px; }
+    .groovy-card { background: #3D363A; box-shadow: 0 5px 15px rgba(0,0,0,.4); backdrop-filter: blur(10px); border: 1px solid #5A5157; }
+    input, select { background-color: rgba(255,255,255,.05); border: 1px solid #5A5157; color: #F4E2C9; }
+    input::placeholder { color: rgba(244,226,201,.5); }
+    .groovy-button { background: #5A5157; transition: .3s; box-shadow: 0 4px 15px rgba(0,0,0,.4); }
+    .groovy-button:hover { background: #72656E; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.6); }
+    .groovy-button:disabled { background: #4a4447; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
+    .log-item { background: rgba(255,255,255,.05); border: 1px solid #5A5157; padding: 10px; border-radius: 10px; position: relative; }
+    .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: #f87171; font-weight: bold; }
+    .neg { color: #86EFAC; } .pos { color: #FCA5A5; }
+    .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; justify-content: center; align-items: center; z-index: 50; }
+    .dialog-box { background: #3D363A; border: 1px solid #5A5157; color: #F4E2C9; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: left; }
+    h1, h2 { color: #F4E2C9; }
+    .tab-btn { border-bottom: 2px solid transparent; }
+    .tab-btn.active { border-color: #F4E2C9; color: #F4E2C9; }
+    .label-sm { font-size: .825rem; opacity: .9; }
+    .mini-stat { background:#2F2A2D; border:1px solid #5A5157; }
+    .nw-row { background:#2F2A2D; border:1px solid #5A5157; }
+    .nw-col-h { color:#F4E2C9; font-weight:600; }
+    .menu-item-icon { width: 1.25rem; height: 1.25rem; opacity: 0.8; }
+    .calc-btn { background-color: #5A5157; color: #F4E2C9; font-weight: bold; padding: 0.75rem; border-radius: 0.5rem; transition: .2s; font-size: 1.1rem; }
+    .calc-btn:hover { background-color: #72656E; }
+    .calc-btn:hover { background-color: #72656E; }
+/* Blur helpers */
+.blurred-number { filter: blur(10px); }
+.unblur-toggle {
+  position: absolute; right: .5rem; top: .5rem;
+  font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem;
+  border: 1px solid #5A5157; background: #3D363A; color: #F4E2C9;
+}
+.unblur-toggle:hover { background:#5A5157; }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+<!-- Hamburger -->
+<button id="menuBtn" aria-label="Menu"
+  class="fixed top-4 right-4 z-50 p-3 rounded-xl border transition
+         bg-[#3D363A] border-[#5A5157] text-[#F4E2C9] hover:bg-[#5A5157]">
+  <span class="block w-6 h-0.5 bg-[#F4E2C9] mb-1"></span>
+  <span class="block w-6 h-0.5 bg-[#F4E2C9] mb-1"></span>
+  <span class="block w-6 h-0.5 bg-[#F4E2C9]"></span>
+</button>
+
+<div id="menuPanel"
+  class="fixed top-16 right-4 z-50 w-64 rounded-xl shadow-2xl border 
+         bg-[#3D363A] border-[#5A5157] text-[#C3B4A8] overflow-hidden flex flex-col hidden">
+  <div class="flex-grow">
+    <button id="navHome" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a.75.75 0 011.06 0l8.955 8.955M3 10.5v9A2.25 2.25 0 005.25 21.75h13.5A2.25 2.25 0 0021 19.5v-9M15.75 21.75h-7.5" /></svg>
+        Home
+    </button>
+    <button id="navConfigure" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        Configure Balances
+    </button>
+    <button id="navLogExpenses" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        Log Expenses
+    </button>
+    <button id="navLogIncome" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>
+        Log Income
+    </button>
+    <button id="navNetWorth" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+        Net Worth
+    </button>
+    <button id="navInflowOutflow" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-1.5L21 9m0 0L16.5 4.5M21 9H3" />
+        </svg>
+        Home/Inflow Outflow
+    </button>
+    <button id="navAnalytics" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+        Analytics
+    </button>
+    <button id="navBudget" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        Budget & Forecast
+    </button>
+    <button id="navTax" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+        Tax Summary
+    </button>
+  </div>
+  <div class="border-t border-[#5A5157] mt-2 pt-2">
+    <button id="navViewLogs" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+        View Logs
+    </button>
+    <button id="navExportData" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+        </svg>
+        Export All Data
+    </button>
+    <button id="navImportData" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
+        Import All Data
+    </button>
+    <button id="navClearData" class="w-full text-left px-4 py-3 text-red-400 hover:bg-red-900/50 flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        Clear All App Data
+    </button>
+  </div>
+</div>
+
+<!-- ============ HOME / LANDING PAGE ============ -->
+<div id="homeSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card">
+  <header class="text-center mb-8">
+    <h1 class="text-5xl md:text-6xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">
+      J Money Tracker
+    </h1>
+  </header>
+  <div id="homeNavGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <!-- Navigation tiles will be generated by JS -->
+  </div>
+</div>
+
+
+<!-- ============ EXPENSES ============ -->
+<div id="expenseSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
+  <header class="text-center mb-6">
+    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
+    <h1 class="text-4xl font-black tracking-wide">Log an Expense</h1>
+    <p class="mt-2">Add your expenses for the week.</p>
+  </header>
+
+  <section class="mb-6 text-center">
+    <div class="flex items-center justify-center gap-4">
+        <button id="prevWeekBtn" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&lt;</button>
+        <p class="text-sm font-medium">Week starting <span id="weekStartDate" class="font-semibold text-white"></span></p>
+        <button id="nextWeekBtn" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&gt;</button>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <section class="p-6 rounded-3xl text-center groovy-card">
+        <h2 class="text-lg font-bold text-white">Total Expenses This Week:</h2>
+        <p class="text-5xl font-extrabold text-white mt-2"><span id="totalAmount">$0.00</span></p>
+    </section>
+    <section class="p-4 rounded-3xl groovy-card text-xs">
+        <h3 class="font-bold text-white mb-2 text-center">Weekly Breakdown</h3>
+        <div id="weeklyBreakdown" class="space-y-1"></div>
+    </section>
+  </div>
+
+  <form id="expenseForm" class="space-y-4">
+    <div class="relative">
+      <label for="expenseDate" class="block text-sm font-medium mb-1">Date</label>
+      <div class="relative">
+        <input type="text" id="expenseDate" placeholder="Select Date" required readonly class="w-full p-4 rounded-xl cursor-pointer">
+        <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div id="calendar-container" class="absolute z-10 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg mt-2 hidden">
+        <div class="flex justify-between items-center p-2">
+          <button type="button" id="prev-month-btn" class="p-2 rounded hover:bg-slate-700">‹</button>
+          <span id="current-month-year" class="font-semibold"></span>
+          <button type="button" id="next-month-btn" class="p-2 rounded hover:bg-slate-700">›</button>
+        </div>
+        <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div id="calendar-days" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+      </div>
+    </div>
+
+    <input type="number" id="expenseAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+    
+    <div class="flex items-center space-x-2">
+      <input type="checkbox" id="splitwiseCheckbox" class="h-4 w-4">
+      <label for="splitwiseCheckbox">Make this a Splitwise purchase?</label>
+    </div>
+
+    <select id="expenseCategory" required class="w-full p-4 rounded-xl">
+      <option value="" disabled selected>Select Category</option>
+      <option>Rent</option><option>Health Insurance</option><option>Digital Subscription</option><option>Gym</option>
+      <option>Bills</option><option>Fuel</option><option>Car Related</option>
+      <option>Grocery & Snacks</option><option>Dine Out</option><option>Personal</option><option>Other</option><option>Transportation</option>
+      <option>Contingency</option>
+      <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
+      <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
+      <option>Investment</option><option>Lend /Cash Holdings</option><option>JJP CBA Credit</option>
+    </select>
+
+    <select id="paymentMode" required class="w-full p-4 rounded-xl">
+      <option value="" disabled selected>Select Payment Mode</option>
+      <option>Amex Credit</option><option>Velocity Credit</option><option>JJP CBA Debit</option>
+      <option>Westpac Debit</option><option>JJP ING Debit</option><option>EEM ING Debit</option>
+    </select>
+
+    <input type="text" id="expenseDescription" placeholder="Description (Optional)" class="w-full p-4 rounded-xl">
+
+    <div id="splitwiseReview" class="hidden p-4 rounded-xl bg-slate-700">
+      <p class="text-sm font-bold">Splitwise Breakdown</p>
+      <p class="text-xs mt-1">Original: <span id="reviewOriginal">$0.00</span> | Adjustment: <span id="reviewAdjustment">$0.00</span></p>
+      <p class="font-bold text-lg mt-2">Final Expense (your share): <span id="reviewFinal">$0.00</span></p>
+      <p class="text-xs italic" id="reviewDesc"></p>
+    </div>
+
+    <button type="submit" class="w-full text-white font-semibold py-4 rounded-xl groovy-button">Add Expense</button>
+  </form>
+
+  <div class="flex space-x-4 mt-4">
+    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl">Export CSV</button>
+    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl">Clear Weekly</button>
+  </div>
+
+  <div class="text-center mt-6">
+    <button id="toggleLogsBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">View Expense Logs</button>
+  </div>
+  <section id="expenseLog" class="mt-4 space-y-2 hidden"></section>
+</div>
+
+<!-- Splitwise dialog -->
+<div id="splitwiseDialog" class="dialog-overlay hidden">
+  <div class="dialog-box space-y-4">
+    <h3 class="text-xl font-semibold">Splitwise Adjustment</h3>
+    <p class="text-sm">Enter adjustment. <strong>Positive = you owe</strong>, <strong>Negative = others owe you</strong>.</p>
+    <input type="number" id="splitwiseAmountInput" placeholder="e.g. -75" class="w-full p-3 rounded-xl">
+    <input type="text" id="splitwiseDescInput" placeholder="Description (optional)" class="w-full p-3 rounded-xl">
+    <div class="flex gap-2">
+      <button id="confirmSplitwiseBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl">Confirm</button>
+      <button id="cancelSplitwiseBtn" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INCOME ============ -->
+<div id="incomeSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
+  <header class="text-center mb-6">
+    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
+    <h1 class="text-3xl font-black tracking-wide">Log Income</h1>
+    <p class="mt-2">Add your income items.</p>
+  </header>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record JJP Salary</button>
+    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record EEM Salary</button>
+  </div>
+  <div class="text-center mb-4">
+    <button id="configureSalariesBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">Configure Salaries</button>
+  </div>
+
+
+  <form id="incomeForm" class="space-y-4">
+    <div class="relative">
+      <label for="incomeDate" class="block text-sm font-medium mb-1">Date</label>
+      <div class="relative">
+        <input type="text" id="incomeDate" placeholder="Select Date" required readonly class="w-full p-4 rounded-xl cursor-pointer">
+        <svg id="calendar-icon-income" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div id="calendar-container-income" class="absolute z-10 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg mt-2 hidden">
+        <div class="flex justify-between items-center p-2">
+          <button type="button" id="prev-month-btn-income" class="p-2 rounded hover:bg-slate-700">‹</button>
+          <span id="current-month-year-income" class="font-semibold"></span>
+          <button type="button" id="next-month-btn-income" class="p-2 rounded hover:bg-slate-700">›</button>
+        </div>
+        <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div id="calendar-days-income" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+      </div>
+    </div>
+
+    <div>
+      <label for="incomeAmount" class="block text-sm font-medium mb-1">Amount</label>
+      <input type="number" id="incomeAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+    </div>
+
+    <div>
+      <label for="incomePAYG" class="block text-sm font-medium mb-1">PAYG (Tax withheld)</label>
+      <input type="number" id="incomePAYG" placeholder="PAYG" step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+    </div>
+
+    <div>
+      <label for="incomeCategory" class="block text-sm font-medium mb-1">Category (Affects Account)</label>
+      <select id="incomeCategory" required class="w-full p-4 rounded-xl">
+        <option value="" disabled selected>Select Category</option>
+        <option>JJP Wage</option><option>EEM Wage</option><option>Tax Return</option>
+        <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>Cashback/Rewards</option><option>JJP PAYG</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="incomeDescription" class="block text-sm font-medium mb-1">Description (Optional)</label>
+      <input type="text" id="incomeDescription" placeholder="Description" class="w-full p-4 rounded-xl">
+    </div>
+
+    <button type="submit" class="w-full text-white font-semibold py-4 rounded-xl groovy-button">Add Income</button>
+  </form>
+  <section class="mt-8 space-y-2" id="incomeLog"></section>
+</div>
+
+<!-- ============ NET WORTH ============ -->
+<div id="netWorthSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
+  <header class="text-center mb-6">
+    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
+    <h1 class="text-3xl font-black tracking-wide">Net Worth</h1>
+     <p class="text-sm opacity-80 mt-1">Overall Snapshot</p>
+    
+    <div class="mt-4 text-center p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-lg relative">
+      <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
+      <p class="text-xs opacity-80">Overall Net Worth</p>
+      <p class="text-5xl font-extrabold text-white" style="text-shadow: 0 0 10px rgba(195, 180, 210, 0.4), 0 0 4px rgba(195, 180, 210, 0.2);">
+        <span id="overallNetWorth" class="blurred-number">$0.00</span>
+      </p>
+    </div>
+
+    <div class="mt-4">
+
+        <button id="recordTallyBtn" class="w-full px-3 py-3 rounded-lg border border-[#5A5157] text-[#F4E2C9] hover:bg-[#5A5157] transition text-sm">Record a Tally and Export CSV</button>
+        <p class="text-xs text-center mt-2 opacity-70">Last Tally: <span id="lastTallyTimestamp">Never</span></p>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="mb-4">
+    <div class="flex gap-2 overflow-x-auto pb-2">
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-assets">Primary Assets</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-investments">Investments</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-cash">Lend/Cash</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-splitwise">Splitwise</button>
+      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-liabilities">Liabilities</button>
+    </div>
+  </div>
+
+  <!-- Panels -->
+  <div id="tab-assets" class="nw-panel">
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="mini-stat rounded-2xl p-3">
+        <div class="text-xs opacity-80 mb-1">Primary Asset Total</div>
+        <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paTotal">$0.00</span></div>
+      </div>
+      <div class="mini-stat rounded-2xl p-3">
+        <div class="text-xs opacity-80 mb-1">Net Discrepancy</div>
+        <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paNetDisc">$0.00</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 px-1 mb-2 text-xs">
+      <div class="nw-col-h">Account</div>
+      <div class="nw-col-h text-center">Calculated</div>
+      <div class="nw-col-h text-right">Actual</div>
+    </div>
+
+    <div id="paRows" class="space-y-2"></div>
+  </div>
+
+  <!-- Investments -->
+  <div id="tab-investments" class="nw-panel hidden text-center p-8">
+      <h2 class="text-2xl font-bold">Coming Soon</h2>
+      <p class="mt-2 opacity-80">The investments tracker is under development.</p>
+  </div>
+
+
+  <!-- Lend / Cash Holdings -->
+  <div id="tab-cash" class="nw-panel hidden">
+    <!-- Totals -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+      <div class="mini-stat rounded-2xl p-4">
+        <div class="text-xs opacity-80 mb-1">Total (Lend + Cash)</div>
+        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcTotal">$0.00</span></div>
+      </div>
+      <div class="mini-stat rounded-2xl p-4">
+        <div class="text-xs opacity-80 mb-1">Lend Subtotal</div>
+        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcLend">$0.00</span></div>
+      </div>
+      <div class="mini-stat rounded-2xl p-4">
+        <div class="text-xs opacity-80 mb-1">Cash Holdings Subtotal</div>
+        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcCash">$0.00</span></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="p-4 rounded-2xl border border-[#5A5157]">
+      <h2 class="text-xl font-semibold mb-2">Lend / Cash Holdings Log</h2>
+      <section id="lcLog" class="space-y-2"></section>
+    </div>
+
+    <!-- Add button at bottom -->
+    <div class="mt-6 flex justify-center">
+      <button id="lcAddBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
+        Add Lend/Cash Holding
+      </button>
+    </div>
+  </div>
+
+  <!-- Splitwise -->
+  <div id="tab-splitwise" class="nw-panel hidden">
+    <div class="grid grid-cols-1 md:grid-cols-1 gap-3 mb-3">
+      <div class="mini-stat rounded-2xl p-4">
+        <div class="text-xs opacity-80 mb-1">Splitwise Total</div>
+        <div class="text-2xl font-extrabold"><span id="swTotal">$0.00</span></div>
+      </div>
+    </div>
+
+    <div class="mt-2 flex justify-center">
+      <button id="swSettleBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
+        Record Splitwise Settlement
+      </button>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold mb-2">Splitwise Settlement Log</h3>
+      <section id="swSettlementLog" class="space-y-2"></section>
+    </div>
+  </div>
+
+  <!-- ===== LIABILITIES ===== -->
+  <div id="tab-liabilities" class="nw-panel hidden">
+    <div class="grid grid-cols-1 max-w-xs mx-auto gap-3 mb-3">
+        <div class="mini-stat rounded-2xl p-3">
+          <div class="text-xs opacity-80 mb-1">Total CC (Calculated)</div>
+          <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="ccTotalCalc">$0.00</span></div>
+        </div>
+      </div>
+
+    <div class="grid grid-cols-3 gap-2 px-1 mb-2 text-xs">
+      <div class="nw-col-h col-span-2">Card</div>
+      <div class="nw-col-h text-right">Calculated</div>
+    </div>
+
+    <div id="ccRows" class="space-y-2"></div>
+
+    <div class="mt-6 flex justify-center">
+      <button id="ccSettleBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
+        Record Credit Card Settlement
+      </button>
+    </div>
+
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold mb-2">Settlement Log</h3>
+      <section id="ccSettlementLog" class="space-y-2"></section>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIGURE BALANCES ============ -->
+<div id="configureSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
+    <header class="text-center mb-6">
+        <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
+        <h1 class="text-3xl font-black tracking-wide">Configure Opening Balances</h1>
+        <p class="text-xs opacity-80 mt-2">Values are saved to your device. Use positive/negative as appropriate.</p>
+    </header>
+
+    <form id="nwOpeningForm" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+      <div><label class="label-sm" for="ob_jjp_cba">JJP CBA Debit</label>
+        <input id="ob_jjp_cba" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_eem_cba">EEM CBA Debit</label>
+        <input id="ob_eem_cba" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_jjp_ing">JJP ING Debit</label>
+        <input id="ob_jjp_ing" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_eem_ing">EEM ING Debit</label>
+        <input id="ob_eem_ing" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_wbc">Westpac Debit</label>
+        <input id="ob_wbc" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <hr class="border-slate-500">
+      <div><label class="label-sm" for="ob_amex">Amex Credit</label>
+        <input id="ob_amex" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_velocity">Velocity Credit</label>
+        <input id="ob_velocity" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <hr class="border-slate-500">
+      <div><label class="label-sm" for="ob_cash_holdings">Cash Holdings</label>
+        <input id="ob_cash_holdings" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+      <div><label class="label-sm" for="ob_splitwise">Splitwise</label>
+        <input id="ob_splitwise" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+    </form>
+    <div class="flex gap-2 pt-4">
+        <button id="nwSaveBtn" class="flex-1 groovy-button text-white font-semibold py-3 rounded-xl">Save Balances</button>
+    </div>
+</div>
+
+<!-- ============ INFLOW OUTFLOW ============ -->
+<div id="inflowOutflowSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden text-center">
+  <h1 class="text-3xl font-black tracking-wide">Inflow / Outflow</h1>
+  <p class="mt-4 text-2xl font-bold">Coming Soon</p>
+  <p class="mt-2 opacity-80">This feature is under development.</p>
+</div>
+
+
+<!-- ===== SALARY CONFIG DIALOG ===== -->
+<div id="salaryConfigDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3 class="text-xl font-semibold mb-3">Configure Quick Salaries</h3>
+    <form id="salaryConfigForm" class="space-y-3">
+        <fieldset class="border border-slate-600 p-3 rounded-lg">
+            <legend class="px-2 text-sm font-medium">JJP Salary</legend>
+            <div><label class="label-sm" for="conf_jjp_wage">JJP Wage Amount</label>
+              <input id="conf_jjp_wage" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+            <div><label class="label-sm" for="conf_jjp_payg">JJP PAYG Amount</label>
+              <input id="conf_jjp_payg" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+        </fieldset>
+        <fieldset class="border border-slate-600 p-3 rounded-lg">
+            <legend class="px-2 text-sm font-medium">EEM Salary</legend>
+            <div><label class="label-sm" for="conf_eem_wage">EEM Wage Amount</label>
+              <input id="conf_eem_wage" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+            <div><label class="label-sm" for="conf_eem_payg">EEM PAYG Amount</label>
+              <input id="conf_eem_payg" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+        </fieldset>
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl">Save Salaries</button>
+        <button type="button" id="salaryConfigCancel" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== VIEW LOGS DIALOG ===== -->
+<div id="viewLogsDialog" class="dialog-overlay hidden">
+    <div class="dialog-box max-h-[80vh] flex flex-col">
+      <h3 class="text-xl font-semibold mb-3">Action Logs</h3>
+      <div id="logsContainer" class="flex-grow overflow-y-auto pr-2 space-y-2 text-sm">
+        <!-- Logs will be injected here -->
+      </div>
+      <div class="flex gap-2 pt-4">
+        <button id="logsCloseBtn" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl">Close</button>
+      </div>
+    </div>
+</div>
+
+
+<!-- ===== CC Settlement Dialog ===== -->
+<div id="ccSettleDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3 class="text-xl font-semibold mb-3">Record Credit Card Settlement</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="label-sm" for="ccSettleAmount">Settlement Amount</label>
+        <input id="ccSettleAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., 250.75">
+      </div>
+      <div>
+        <label class="label-sm" for="ccSettleCard">Settled Against</label>
+        <select id="ccSettleCard" class="w-full p-3 mt-1 rounded-lg">
+          <option>Amex Credit</option>
+          <option>Velocity Credit</option>
+        </select>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button id="ccSettleSave" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl" type="button">Save</button>
+        <button id="ccSettleCancel" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Amex Pending Dialog ===== -->
+<div id="amexPendingDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3 class="text-xl font-semibold mb-3">Record Amex Pending Transactions</h3>
+    <p class="text-xs opacity-80 mb-4">Enter the total amount of pending transactions on your Amex card.</p>
+    <div class="space-y-3">
+      <div>
+        <label class="label-sm" for="amexPendingAmount">Pending Amount</label>
+        <input id="amexPendingAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., 125.50">
+      </div>
+      <button id="showCalcBtn" type="button" class="w-full groovy-button text-sm py-2 rounded-lg">Open Calculator</button>
+      <div class="flex gap-2 pt-1">
+        <button id="amexPendingSave" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl" type="button">Save</button>
+        <button id="amexPendingCancel" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Basic Calculator Dialog ===== -->
+<div id="calculatorDialog" class="dialog-overlay hidden">
+  <div class="dialog-box !p-3 !max-w-xs">
+    <div class="bg-slate-800 rounded-lg p-2 w-full">
+      <div id="calc-display" class="bg-slate-900 text-white text-right rounded p-2 mb-2 text-2xl font-mono truncate h-12 flex items-center justify-end">0</div>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="calc-btn bg-red-700/80 hover:bg-red-600 col-span-2">C</button>
+        <button class="calc-btn bg-slate-700 hover:bg-slate-600">&larr;</button>
+        <button class="calc-btn bg-orange-600 hover:bg-orange-500">/</button>
+        <button class="calc-btn">7</button> <button class="calc-btn">8</button> <button class="calc-btn">9</button>
+        <button class="calc-btn bg-orange-600 hover:bg-orange-500">*</button>
+        <button class="calc-btn">4</button> <button class="calc-btn">5</button> <button class="calc-btn">6</button>
+        <button class="calc-btn bg-orange-600 hover:bg-orange-500">-</button>
+        <button class="calc-btn">1</button> <button class="calc-btn">2</button> <button class="calc-btn">3</button>
+        <button class="calc-btn bg-orange-600 hover:bg-orange-500">+</button>
+        <button class="calc-btn col-span-2">0</button>
+        <button class="calc-btn">.</button>
+        <button class="calc-btn bg-green-600 hover:bg-green-500">=</button>
+      </div>
+      <button id="useCalcResultBtn" class="w-full mt-3 groovy-button text-sm py-2 rounded-md">Use this value</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== Lend/Cash Dialog ===== -->
+<div id="lcDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3 class="text-xl font-semibold mb-3">Add Lend/Cash Holding</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="label-sm" for="lcAmount">Amount</label>
+        <input id="lcAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., 150.00">
+      </div>
+      <div>
+        <label class="label-sm" for="lcCategory">Category</label>
+        <select id="lcCategory" class="w-full p-3 mt-1 rounded-lg">
+          <option>Lend</option>
+          <option>Cash Holdings</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-sm" for="lcPaymentMode">Payment Mode</label>
+        <select id="lcPaymentMode" class="w-full p-3 mt-1 rounded-lg">
+          <option value="" disabled selected>Select Mode</option>
+          <option>JJP CBA Debit</option>
+          <option>EEM CBA Debit</option>
+          <option>Amex Credit</option>
+          <option>Velocity Credit</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-sm" for="lcDesc">Description (optional)</label>
+        <input id="lcDesc" type="text" class="w-full p-3 mt-1 rounded-lg" placeholder="Note or reference">
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button id="lcSave" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl" type="button">Save</button>
+        <button id="lcCancel" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Splitwise Settlement Dialog ===== -->
+<div id="swSettleDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <h3 class="text-xl font-semibold mb-3">Record Splitwise Settlement</h3>
+    <p class="text-xs opacity-80 mb-4">Enter a negative amount (e.g. -50) if you paid someone back. Enter a positive amount if someone paid you back.</p>
+    <div class="space-y-3">
+      <div>
+        <label class="label-sm" for="swSettleAmount">Amount</label>
+        <input id="swSettleAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., -50.00">
+      </div>
+      <div>
+        <label class="label-sm" for="swSettleDesc">Description (optional)</label>
+        <input id="swSettleDesc" type="text" class="w-full p-3 mt-1 rounded-lg" placeholder="Note">
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button id="swSettleSave" class="flex-1 groovy-button text-white font-semibold py-2 rounded-xl" type="button">Save</button>
+        <button id="swSettleCancel" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 rounded-xl" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFileInput" class="hidden" accept=".json">
+
+<script>
+  /* ===================== GLOBAL AND NAVIGATION ===================== */
+  const menuBtn = document.getElementById('menuBtn');
+  const menuPanel = document.getElementById('menuPanel');
+  const homeSection = document.getElementById('homeSection');
+  const expenseSection = document.getElementById('expenseSection');
+  const incomeSection = document.getElementById('incomeSection');
+  const netWorthSection = document.getElementById('netWorthSection');
+  const configureSection = document.getElementById('configureSection');
+  const inflowOutflowSection = document.getElementById('inflowOutflowSection');
+  
+  const allSections = [homeSection, expenseSection, incomeSection, netWorthSection, configureSection, inflowOutflowSection];
+
+  menuBtn.addEventListener('click', () => menuPanel.classList.toggle('hidden'));
+  document.addEventListener('click', (e) => {
+    if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target)) {
+        menuPanel.classList.add('hidden');
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') menuPanel.classList.add('hidden'); });
+
+  function showSection(section) {
+    allSections.forEach(s => s.classList.add('hidden'));
+    section.classList.remove('hidden');
+    menuPanel.classList.add('hidden');
+  }
+
+  document.getElementById('navHome').onclick = () => showSection(homeSection);
+  document.getElementById('navConfigure').onclick = () => showSection(configureSection);
+  document.getElementById('navLogExpenses').onclick = () => {
+    showSection(expenseSection);
+    updateExpenseViewForWeek(getWeekStart());
+  };
+  document.getElementById('navLogIncome').onclick = () => showSection(incomeSection);
+  document.getElementById('navNetWorth').onclick = () => {
+    showSection(netWorthSection);
+    recalculateAllNetWorth();
+    activateTab(document.querySelector('[data-tab="tab-assets"]'));
+  };
+  document.getElementById('navInflowOutflow').onclick = () => showSection(inflowOutflowSection);
+  document.getElementById('navAnalytics').onclick = () => alert("Analytics coming soon!");
+  document.getElementById('navBudget').onclick = () => alert("Budget & Forecast coming soon!");
+  document.getElementById('navTax').onclick = () => alert("Tax Summary coming soon!");
+  document.getElementById('navClearData').onclick = () => {
+    if (confirm('⚠️ DANGER! This will permanently delete ALL data from the tracker. This cannot be undone. Are you absolutely sure?')) {
+        localStorage.clear();
+        alert('All data has been cleared.');
+        location.reload();
+    }
+  };
+
+  function populateHomePageNav() {
+    const homeNavGrid = document.getElementById('homeNavGrid');
+    homeNavGrid.innerHTML = '';
+    const menuButtons = document.querySelectorAll('#menuPanel button[id^="nav"]');
+    
+    menuButtons.forEach(btn => {
+        if (['navClearData', 'navViewLogs', 'navHome', 'navExportData', 'navImportData'].includes(btn.id)) return;
+
+        const tile = document.createElement('button');
+        tile.className = 'flex flex-col items-center justify-center p-4 rounded-2xl groovy-card hover:bg-[#5A5157] transition-transform hover:scale-105 text-center';
+        tile.innerHTML = `
+            <div class="w-8 h-8 mb-2 text-white">${btn.querySelector('svg').outerHTML}</div>
+            <span class="text-sm font-semibold">${btn.textContent.trim()}</span>
+        `;
+        tile.onclick = () => btn.click();
+        homeNavGrid.appendChild(tile);
+    });
+  }
+
+  /* ===================== DATA IMPORT/EXPORT ===================== */
+  const importFileInput = document.getElementById('importFileInput');
+  const DATA_KEYS_TO_BACKUP = [
+    'expensesData', 'incomeData', 'nwOpeningBalances', 'nwActualBalances',
+    'nwLendCash', 'nwSplitwiseSettlements', 'nwCcSettlements', 'salaryConfig',
+    'amexPendingAmount', 'actionLogs', 'lastTallyTimestamp', 'lastExpenseId'
+  ];
+
+  document.getElementById('navExportData').addEventListener('click', () => {
+    const backupData = {};
+    DATA_KEYS_TO_BACKUP.forEach(key => {
+        const data = localStorage.getItem(key);
+        if (data !== null) { // Only backup keys that exist
+            backupData[key] = data;
+        }
+    });
+
+    if (Object.keys(backupData).length === 0) {
+        alert('No data to export.');
+        return;
+    }
+
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const link = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    link.href = URL.createObjectURL(blob);
+    link.download = `jmoney_backup_${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    menuPanel.classList.add('hidden');
+  });
+
+  document.getElementById('navImportData').addEventListener('click', () => {
+    importFileInput.click();
+    menuPanel.classList.add('hidden');
+  });
+
+  importFileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+        importFileInput.value = '';
+        return;
+    }
+
+    if (!confirm('⚠️ IMPORTANT!\nThis will overwrite ALL current data in the app.\nThis cannot be undone. Are you sure you want to proceed?')) {
+        importFileInput.value = ''; // Reset file input
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (typeof importedData !== 'object' || importedData === null) {
+                throw new Error("File does not contain valid JSON data.");
+            }
+            localStorage.clear();
+            Object.keys(importedData).forEach(key => {
+                if (DATA_KEYS_TO_BACKUP.includes(key)) {
+                    // The data is already a string from the backup, so we just set it.
+                    localStorage.setItem(key, importedData[key]);
+                }
+            });
+            alert('Data imported successfully! The app will now reload.');
+            location.reload();
+        } catch (error) {
+            alert('Error reading or parsing the file. Please make sure it is a valid backup file.');
+            console.error('Import error:', error);
+        } finally {
+            importFileInput.value = '';
+        }
+    };
+    reader.readAsText(file);
+  });
+
+
+  /* ===================== SHARED HELPERS ===================== */
+  function formatCurrency(n) {
+      if (typeof n !== 'number') n = 0;
+      return '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function enforce2dp(el){
+    el.addEventListener('input',()=>{ const v=el.value; if(!v) return; const p=v.split('.'); if(p.length===2 && p[1].length>2){ p[1]=p[1].slice(0,2); el.value=p.join('.'); }});
+    el.addEventListener('blur',()=>{ const v=el.value; if(v!=='' && !isNaN(v)){ el.value=(Math.round(parseFloat(v)*100)/100).toFixed(2);} });
+  }
+  function getData(key, fallback = []) {
+      const item = localStorage.getItem(key);
+      try {
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        console.error("Error parsing localStorage item:", key, e);
+        return fallback;
+      }
+  }
+
+  /* ===================== ACTION LOGGING ===================== */
+  const viewLogsDialog = document.getElementById('viewLogsDialog');
+  const logsContainer = document.getElementById('logsContainer');
+  const logsCloseBtn = document.getElementById('logsCloseBtn');
+
+  function logAction(type, data) {
+      const logs = getData('actionLogs', []);
+      const newLog = {
+          timestamp: Date.now(),
+          type,
+          data
+      };
+      logs.unshift(newLog); // Add to the beginning
+      localStorage.setItem('actionLogs', JSON.stringify(logs.slice(0, 100))); // Keep latest 100 logs
+  }
+
+  function formatLog(log) {
+      const time = new Date(log.timestamp).toLocaleString('en-AU');
+      let details = '';
+      switch(log.type) {
+          case 'add_expense':
+              details = `Added expense: ${formatCurrency(log.data.amount)} for "${log.data.category}" via ${log.data.mode}.`;
+              break;
+          case 'add_income':
+              details = `Added income: ${formatCurrency(log.data.amount)} for "${log.data.category}".`;
+              break;
+          case 'delete_entry':
+              details = `Deleted entry with ID ${log.data.id}.`;
+              break;
+          case 'save_balances':
+              details = `Saved Opening Balances. Net Worth calculations updated.`;
+              break;
+          case 'record_tally':
+              details = `Recorded a Tally and exported CSV.`;
+              break;
+          default:
+              details = `An unknown action was performed.`;
+      }
+      return `<div class="p-2 rounded bg-slate-800/50"><strong class="block text-xs text-sky-400">${time}</strong>${details}</div>`;
+  }
+
+  document.getElementById('navViewLogs').addEventListener('click', () => {
+      const logs = getData('actionLogs', []);
+      if (logs.length === 0) {
+          logsContainer.innerHTML = '<p class="text-center opacity-70">No actions logged yet.</p>';
+      } else {
+          logsContainer.innerHTML = logs.map(formatLog).join('');
+      }
+      viewLogsDialog.classList.remove('hidden');
+  });
+  logsCloseBtn.addEventListener('click', () => viewLogsDialog.classList.add('hidden'));
+
+
+</script>
+
+<script>
+  /* ===================== CALCULATOR LOGIC ===================== */
+  function initializeCalculator() {
+    const calculatorDialog = document.getElementById('calculatorDialog');
+    const display = document.getElementById('calc-display');
+    const buttons = document.querySelectorAll('#calculatorDialog .calc-btn');
+    const useResultBtn = document.getElementById('useCalcResultBtn');
+    const showCalcBtn = document.getElementById('showCalcBtn');
+
+    let currentInput = '0';
+    let operator = null;
+    let previousInput = null;
+
+    function updateDisplay() {
+        display.textContent = currentInput;
+    }
+
+    function handleInput(value) {
+        if (value === '.') {
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+        } else {
+            if (currentInput === '0') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+        }
+        updateDisplay();
+    }
+    
+    function handleOperator(op) {
+        if (operator && previousInput) {
+            calculate();
+        }
+        operator = op;
+        previousInput = currentInput;
+        currentInput = '0';
+    }
+
+    function calculate() {
+        const prev = parseFloat(previousInput);
+        const curr = parseFloat(currentInput);
+        if (isNaN(prev) || isNaN(curr)) return;
+        
+        let result;
+        switch(operator) {
+            case '+': result = prev + curr; break;
+            case '-': result = prev - curr; break;
+            case '*': result = prev * curr; break;
+            case '/': result = prev / curr; break;
+            default: return;
+        }
+        currentInput = String(Math.round(result * 100) / 100);
+        operator = null;
+        previousInput = null;
+        updateDisplay();
+    }
+    
+    function reset() {
+        currentInput = '0';
+        operator = null;
+        previousInput = null;
+        updateDisplay();
+    }
+    
+    function backspace() {
+        if (currentInput.length > 1) {
+            currentInput = currentInput.slice(0, -1);
+        } else {
+            currentInput = '0';
+        }
+        updateDisplay();
+    }
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const value = button.textContent;
+            if (!isNaN(parseInt(value)) || value === '.') {
+                handleInput(value);
+            } else if (['+', '-', '*', '/'].includes(value)) {
+                handleOperator(value);
+            } else if (value === '=') {
+                calculate();
+            } else if (value === 'C') {
+                reset();
+            } else if (value === '←') {
+                backspace();
+            }
+        });
+    });
+
+    showCalcBtn.addEventListener('click', () => {
+        reset();
+        calculatorDialog.classList.remove('hidden');
+    });
+
+    useResultBtn.addEventListener('click', () => {
+        document.getElementById('amexPendingAmount').value = parseFloat(currentInput).toFixed(2);
+        calculatorDialog.classList.add('hidden');
+    });
+
+    // Allow closing with a click outside
+    calculatorDialog.addEventListener('click', (e) => {
+        if (e.target === calculatorDialog) {
+            calculatorDialog.classList.add('hidden');
+        }
+    });
+  }
+</script>
+
+
+<script>
+  /* ===================== EXPENSES LOGIC ===================== */
+  const expenseDateInput = document.getElementById('expenseDate');
+  const expenseAmount = document.getElementById('expenseAmount');
+  const expenseCategory = document.getElementById('expenseCategory');
+  const paymentMode = document.getElementById('paymentMode');
+  const expenseDescription = document.getElementById('expenseDescription');
+
+  const splitwiseCheckbox = document.getElementById('splitwiseCheckbox');
+  const splitwiseDialog = document.getElementById('splitwiseDialog');
+  const splitwiseAmountInput = document.getElementById('splitwiseAmountInput');
+  const splitwiseDescInput = document.getElementById('splitwiseDescInput');
+  const confirmSplitwiseBtn = document.getElementById('confirmSplitwiseBtn');
+  const cancelSplitwiseBtn = document.getElementById('cancelSplitwiseBtn');
+
+  const splitwiseReview = document.getElementById('splitwiseReview');
+  const reviewOriginal = document.getElementById('reviewOriginal');
+  const reviewAdjustment = document.getElementById('reviewAdjustment');
+  const reviewFinal = document.getElementById('reviewFinal');
+  const reviewDesc = document.getElementById('reviewDesc');
+
+  const expenseLog = document.getElementById('expenseLog');
+  const totalAmountSpan = document.getElementById('totalAmount');
+  const weekStartDateSpan = document.getElementById('weekStartDate');
+  const toggleLogsBtn = document.getElementById('toggleLogsBtn');
+  const prevWeekBtn = document.getElementById('prevWeekBtn');
+  const nextWeekBtn = document.getElementById('nextWeekBtn');
+
+  let expenses = getData("expensesData", []);
+  let splitwiseAdj = 0, splitwiseText = "";
+  let displayedWeekStart; // This will hold the start date of the week being viewed
+
+  const PARENT_CATEGORIES = {
+    'Fixed Cost': ['Rent', 'Health Insurance', 'Digital Subscription', 'Gym'],
+    'Provisional Cost': ['Bills', 'Fuel', 'Car Related'],
+    'Variable Cost': ['Grocery & Snacks', 'Dine Out', 'Personal', 'Other', 'Transportation'],
+    'Contingency': ['Contingency']
+  };
+
+  function generateExpenseId(dateString) {
+    const d = new Date(dateString);
+    const year = d.getFullYear().toString().slice(-2);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const datePrefix = `${year}${month}${day}`;
+
+    let lastIdData = getData('lastExpenseId', { date: '', counter: 0 });
+    let counter = (lastIdData.date === datePrefix) ? lastIdData.counter + 1 : 1;
+    
+    localStorage.setItem('lastExpenseId', JSON.stringify({ date: datePrefix, counter: counter }));
+    return `${datePrefix}${String(counter).padStart(3, '0')}`;
+  }
+
+  function getWeekStart(){
+    const today=new Date(); const d=today.getDay(); const diff=(d===6?0:d+1);
+    const s=new Date(today); s.setDate(today.getDate()-diff); s.setHours(0,0,0,0); return s;
+  }
+  function getWeekEndFrom(s){ const e=new Date(s); e.setDate(e.getDate()+6); e.setHours(23,59,59,999); return e; }
+
+  let currentDate=new Date();
+  const calendarContainer=document.getElementById('calendar-container');
+  const calendarIcon=document.getElementById('calendar-icon');
+  const calendarDays=document.getElementById('calendar-days');
+  const currentMonthYearSpan=document.getElementById('current-month-year');
+
+  function renderCalendar(){
+    calendarDays.innerHTML=''; const y=currentDate.getFullYear(), m=currentDate.getMonth();
+    const first=new Date(y,m,1).getDay(), last=new Date(y,m+1,0).getDate();
+    currentMonthYearSpan.textContent=currentDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    for(let i=0;i<first;i++){const b=document.createElement('div'); b.className='p-2'; calendarDays.appendChild(b);}
+    for(let d=1; d<=last; d++){const cell=document.createElement('div'); cell.textContent=d;
+      cell.className='p-2 text-sm rounded-full cursor-pointer hover:bg-blue-500 hover:text-white';
+      const t=new Date(); if(y===t.getFullYear()&&m===t.getMonth()&&d===t.getDate()){cell.classList.add('bg-blue-500','text-white');}
+      cell.onclick=()=>{expenseDateInput.value=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; calendarContainer.classList.add('hidden');};
+      calendarDays.appendChild(cell);}
+  }
+  document.getElementById('prev-month-btn').onclick=()=>{currentDate.setMonth(currentDate.getMonth()-1); renderCalendar();};
+  document.getElementById('next-month-btn').onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1); renderCalendar();};
+  expenseDateInput.onclick=()=>calendarContainer.classList.toggle('hidden');
+  calendarIcon.onclick=()=>calendarContainer.classList.toggle('hidden');
+  document.addEventListener('click',(e)=>{ if(!calendarContainer.contains(e.target)&&e.target!==expenseDateInput&&e.target!==calendarIcon){calendarContainer.classList.add('hidden');}});
+  renderCalendar();
+
+  splitwiseCheckbox.addEventListener('change', () => {
+    if (splitwiseCheckbox.checked) {
+        splitwiseDialog.classList.remove('hidden');
+    } else {
+        splitwiseReview.classList.add('hidden');
+        splitwiseAdj = 0;
+        splitwiseText = "";
+    }
+  });
+
+  cancelSplitwiseBtn.addEventListener('click',()=>{ splitwiseDialog.classList.add('hidden'); splitwiseCheckbox.checked=false; splitwiseReview.classList.add('hidden'); splitwiseAdj=0; splitwiseText="";});
+  confirmSplitwiseBtn.addEventListener('click',()=>{
+    splitwiseAdj=parseFloat(splitwiseAmountInput.value)||0; splitwiseText=splitwiseDescInput.value||"";
+    if (splitwiseAdj > 0) {
+        paymentMode.value = 'JJP CBA Debit';
+    }
+    const original=parseFloat(expenseAmount.value)||0; const final=(splitwiseAdj<0)?(original+splitwiseAdj):original;
+    reviewOriginal.textContent=formatCurrency(original); 
+    reviewAdjustment.textContent=formatCurrency(splitwiseAdj); 
+    reviewFinal.textContent=formatCurrency(final);
+    reviewDesc.textContent=splitwiseText?`Note: ${splitwiseText}`:""; splitwiseReview.classList.remove('hidden'); splitwiseDialog.classList.add('hidden');
+  });
+
+  function parseISODate(s){ const [Y,M,D]=s.split('-').map(Number); return new Date(Y,M-1,D); }
+
+  function isDateInWeek(dateString, weekStart, weekEnd) {
+      const d = parseISODate(dateString);
+      return d >= weekStart && d <= weekEnd;
+  }
+
+  function updateWeeklyTotals(weekStart, weekEnd) {
+      const weeklyExpenses = expenses.filter(e => e.affectsTotal === 'Yes' && isDateInWeek(e.date, weekStart, weekEnd));
+      const total = weeklyExpenses.reduce((sum, e) => sum + e.amount, 0);
+      totalAmountSpan.textContent = formatCurrency(total);
+      
+      const breakdownContainer = document.getElementById('weeklyBreakdown');
+      breakdownContainer.innerHTML = '';
+      Object.keys(PARENT_CATEGORIES).forEach(parentCat => {
+          const childCats = PARENT_CATEGORIES[parentCat];
+          const catTotal = weeklyExpenses
+              .filter(e => childCats.includes(e.category))
+              .reduce((sum, e) => sum + e.amount, 0);
+          
+          const row = document.createElement('div');
+          row.className = 'flex justify-between items-center';
+          row.innerHTML = `
+              <span class="opacity-80">${parentCat}:</span>
+              <span class="font-semibold text-white">${formatCurrency(catTotal)}</span>
+          `;
+          breakdownContainer.appendChild(row);
+      });
+  }
+  
+  function renderExpenseLogForWeek(weekStart, weekEnd) {
+    expenseLog.innerHTML = "";
+    const weeklyExpenses = expenses.filter(e => isDateInWeek(e.date, weekStart, weekEnd));
+    weeklyExpenses.sort((a,b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
+    weeklyExpenses.forEach(e => renderRow(e));
+  }
+  
+  function updateExpenseViewForWeek(newWeekStart) {
+    displayedWeekStart = newWeekStart;
+    const displayedWeekEnd = getWeekEndFrom(newWeekStart);
+
+    weekStartDateSpan.textContent = displayedWeekStart.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    updateWeeklyTotals(displayedWeekStart, displayedWeekEnd);
+    renderExpenseLogForWeek(displayedWeekStart, displayedWeekEnd);
+
+    const actualCurrentWeekStart = getWeekStart();
+    const oneWeekAhead = new Date(actualCurrentWeekStart);
+    oneWeekAhead.setDate(oneWeekAhead.getDate() + 7);
+    nextWeekBtn.disabled = displayedWeekStart.getTime() >= oneWeekAhead.getTime();
+  }
+
+
+  function refreshCurrentWeekView() {
+    const weekEnd = getWeekEndFrom(displayedWeekStart);
+    updateWeeklyTotals(displayedWeekStart, weekEnd);
+    renderExpenseLogForWeek(displayedWeekStart, weekEnd);
+  }
+
+  function renderRow(entry){
+    const item=document.createElement('div'); item.className=`log-item ${entry.cssExtra||""}`; item.dataset.id=entry.id;
+    item.innerHTML=`<span class="delete-btn" data-id="${entry.id}">×</span>
+      <strong class="text-xs text-slate-400 block">${entry.id}</strong>
+      <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} | ${entry.mode}
+      ${entry.entryType?`<span class="ml-2 text-xs px-2 py-1 rounded bg-slate-600">${entry.entryType}</span>`:""}
+      ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
+    item.querySelector('.delete-btn').onclick=()=>deleteEntry(entry.id); expenseLog.prepend(item);
+  }
+  
+  function deleteEntry(id){
+    const initialLength = expenses.length;
+    expenses = expenses.filter(e => e.id !== id);
+    if (expenses.length < initialLength) {
+        logAction('delete_entry', {id});
+        saveExpenses();
+        refreshCurrentWeekView();
+    }
+  }
+
+  function saveExpenses(){ localStorage.setItem("expensesData", JSON.stringify(expenses)); recalculateAllNetWorth(); }
+  
+  toggleLogsBtn.addEventListener('click', () => {
+    expenseLog.classList.toggle('hidden');
+    toggleLogsBtn.textContent = expenseLog.classList.contains('hidden') ? 'View Expense Logs' : 'Hide Expense Logs';
+  });
+
+  document.getElementById('expenseForm').addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const date=expenseDateInput.value, original=parseFloat(expenseAmount.value)||0, category=expenseCategory.value, mode=paymentMode.value, desc=expenseDescription.value;
+    if(!date||!original||!category||!mode) return;
+    
+    const expenseId = generateExpenseId(date);
+    let newEntries = [];
+
+    if(splitwiseCheckbox.checked && splitwiseAdj!==0){
+      if(splitwiseAdj < 0){ // I paid for others
+        const personalAmount = original + splitwiseAdj;
+        const personalEntry = {id:expenseId, date, amount:personalAmount, bankTransactionAmount: original, category, mode, desc:`Personal share (from ${formatCurrency(original)} with adj ${formatCurrency(splitwiseAdj)})${desc?` | ${desc}`:""}`, entryType:"Expense (Personal)", affectsTotal:"Yes"};
+        const settlementEntry = {id:expenseId, date, amount:splitwiseAdj, category:"Splitwise", mode, desc:splitwiseText, entryType:"Splitwise (Others owe you)", affectsTotal:"No", cssExtra:"neg"};
+        newEntries.push(personalEntry, settlementEntry);
+        logAction('add_expense', { amount: personalAmount, category, mode });
+      } else { // Others paid for me
+        const personalEntry = {id:expenseId, date, amount:original, category, mode, desc, entryType:"Expense (Personal)", affectsTotal:"Yes", isBankTransaction: false};
+        const settlementEntry = {id:expenseId, date, amount:splitwiseAdj, category:"Splitwise", mode, desc:splitwiseText, entryType:"Splitwise (You owe)", affectsTotal:"No", cssExtra:"pos"};
+        newEntries.push(personalEntry, settlementEntry);
+        logAction('add_expense', { amount: original, category, mode: `Splitwise (paid by others)` });
+      }
+    } else {
+      const entry={id:expenseId, date, amount:original, category, mode, desc, entryType:"Expense (Personal)", affectsTotal:"Yes"};
+      newEntries.push(entry);
+      logAction('add_expense', { amount: original, category, mode });
+    }
+    
+    expenses.push(...newEntries);
+    saveExpenses();
+
+    const displayedWeekEnd = getWeekEndFrom(displayedWeekStart);
+    if (isDateInWeek(date, displayedWeekStart, displayedWeekEnd)) {
+        refreshCurrentWeekView();
+    } else {
+        alert('Expense added for a different week. Navigate to that week to see it.');
+    }
+    
+    e.target.reset(); splitwiseReview.classList.add('hidden'); splitwiseAdj=0; splitwiseText=""; splitwiseCheckbox.checked=false;
+  });
+
+  document.getElementById('exportCsvBtn').addEventListener('click',()=>{
+    if(expenses.length===0){ alert("No expenses to export."); return; }
+    const header="ID,Date,Amount,Category,Payment Mode,Description,EntryType,AffectsTotal\n";
+    const rows=expenses.map(e=>`${e.id},${e.date},${e.amount},"${e.category}","${e.mode}","${(e.desc||"").replace(/"/g,'""')}","${e.entryType}",${e.affectsTotal}`).join("\n");
+    const csv=header+rows; const blob=new Blob([csv],{type:"text/csv"}); const link=document.createElement("a");
+    link.href=URL.createObjectURL(blob); link.download="jmoney_expenses.csv"; link.click();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click',()=>{
+    const weekEnd = getWeekEndFrom(displayedWeekStart);
+    if(confirm(`This will clear all expenses from ${displayedWeekStart.toLocaleDateString()} to ${weekEnd.toLocaleDateString()}. Are you sure?`)){
+      expenses = expenses.filter(e => !isDateInWeek(e.date, displayedWeekStart, weekEnd));
+      saveExpenses();
+      refreshCurrentWeekView();
+    }
+  });
+  
+  prevWeekBtn.addEventListener('click', () => {
+    const newDate = new Date(displayedWeekStart);
+    newDate.setDate(newDate.getDate() - 7);
+    updateExpenseViewForWeek(newDate);
+  });
+  
+  nextWeekBtn.addEventListener('click', () => {
+    if (nextWeekBtn.disabled) return;
+    const newDate = new Date(displayedWeekStart);
+    newDate.setDate(newDate.getDate() + 7);
+    updateExpenseViewForWeek(newDate);
+  });
+  
+  enforce2dp(expenseAmount);
+</script>
+
+<script>
+  /* ===================== INCOME LOGIC ===================== */
+  const incomeForm=document.getElementById('incomeForm');
+  const incomeDate=document.getElementById('incomeDate');
+  const incomeAmount=document.getElementById('incomeAmount');
+  const incomePAYG=document.getElementById('incomePAYG');
+  const incomeCategory=document.getElementById('incomeCategory');
+  const incomeDescription=document.getElementById('incomeDescription');
+  const incomeLog=document.getElementById('incomeLog');
+  const btnQuickJJPSalary=document.getElementById('btnQuickJJPSalary');
+  const btnQuickEEMSalary=document.getElementById('btnQuickEEMSalary');
+  const configureSalariesBtn=document.getElementById('configureSalariesBtn');
+  const salaryConfigDialog=document.getElementById('salaryConfigDialog');
+  const salaryConfigForm=document.getElementById('salaryConfigForm');
+  const salaryConfigCancel=document.getElementById('salaryConfigCancel');
+  
+  let incomes=getData("incomeData", []);
+  let salaryConfig = getData("salaryConfig", {
+      jjp_wage: 1614.00, jjp_payg: 484.00,
+      eem_wage: 0, eem_payg: 0
+  });
+
+  function renderIncomeRow(entry){
+    const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
+    item.innerHTML=`<span class="delete-btn" data-id="${entry.id}">×</span>
+      <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category}
+      ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
+    item.querySelector('.delete-btn').onclick=()=>deleteIncome(entry.id); incomeLog.prepend(item);
+  }
+  function rerenderIncomeLog(){ incomeLog.innerHTML=""; incomes.forEach(renderIncomeRow); }
+  function deleteIncome(id){ 
+      const i=incomes.findIndex(x=>x.id===id); 
+      if(i>-1){ 
+          logAction('delete_entry', {id});
+          incomes.splice(i,1); 
+          saveIncomes(); 
+          rerenderIncomeLog(); 
+      } 
+  }
+  function saveIncomes(){ localStorage.setItem("incomeData", JSON.stringify(incomes)); recalculateAllNetWorth(); }
+  function loadIncomes(){ rerenderIncomeLog(); }
+  
+  // Salary Config
+  function openSalaryConfig() {
+      document.getElementById('conf_jjp_wage').value = salaryConfig.jjp_wage.toFixed(2);
+      document.getElementById('conf_jjp_payg').value = salaryConfig.jjp_payg.toFixed(2);
+      document.getElementById('conf_eem_wage').value = salaryConfig.eem_wage.toFixed(2);
+      document.getElementById('conf_eem_payg').value = salaryConfig.eem_payg.toFixed(2);
+      salaryConfigDialog.classList.remove('hidden');
+  }
+  function closeSalaryConfig() { salaryConfigDialog.classList.add('hidden'); }
+  configureSalariesBtn.addEventListener('click', openSalaryConfig);
+  salaryConfigCancel.addEventListener('click', closeSalaryConfig);
+  salaryConfigForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      salaryConfig.jjp_wage = parseFloat(document.getElementById('conf_jjp_wage').value) || 0;
+      salaryConfig.jjp_payg = parseFloat(document.getElementById('conf_jjp_payg').value) || 0;
+      salaryConfig.eem_wage = parseFloat(document.getElementById('conf_eem_wage').value) || 0;
+      salaryConfig.eem_payg = parseFloat(document.getElementById('conf_eem_payg').value) || 0;
+      localStorage.setItem('salaryConfig', JSON.stringify(salaryConfig));
+      alert('Salary presets saved.');
+      closeSalaryConfig();
+  });
+
+  [...salaryConfigForm.querySelectorAll('input')].forEach(enforce2dp);
+
+
+  enforce2dp(incomeAmount); enforce2dp(incomePAYG);
+
+  let currentDateIncome=new Date();
+  const calendarContainerIncome=document.getElementById('calendar-container-income');
+  const calendarIconIncome=document.getElementById('calendar-icon-income');
+  const calendarDaysIncome=document.getElementById('calendar-days-income');
+  const currentMonthYearIncome=document.getElementById('current-month-year-income');
+
+  function renderIncomeCalendar(){
+    calendarDaysIncome.innerHTML=''; const y=currentDateIncome.getFullYear(), m=currentDateIncome.getMonth();
+    const first=new Date(y,m,1).getDay(), last=new Date(y,m+1,0).getDate();
+    currentMonthYearIncome.textContent=currentDateIncome.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    for(let i=0;i<first;i++){ const b=document.createElement('div'); b.className='p-2'; calendarDaysIncome.appendChild(b);}
+    for(let d=1; d<=last; d++){ const cell=document.createElement('div');
+      cell.textContent=d; cell.className='p-2 text-sm rounded-full cursor-pointer hover:bg-blue-500 hover:text-white';
+      const t=new Date(); if(y===t.getFullYear()&&m===t.getMonth()&&d===t.getDate()){ cell.classList.add('bg-blue-500','text-white');}
+      cell.onclick=()=>{ incomeDate.value=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; calendarContainerIncome.classList.add('hidden');};
+      calendarDaysIncome.appendChild(cell); }
+  }
+  document.getElementById('prev-month-btn-income').onclick=()=>{ currentDateIncome.setMonth(currentDateIncome.getMonth()-1); renderIncomeCalendar(); };
+  document.getElementById('next-month-btn-income').onclick=()=>{ currentDateIncome.setMonth(currentDateIncome.getMonth()+1); renderIncomeCalendar(); };
+  incomeDate.onclick=()=>calendarContainerIncome.classList.toggle('hidden');
+  calendarIconIncome.onclick=()=>calendarContainerIncome.classList.toggle('hidden');
+  document.addEventListener('click',(e)=>{ if(!calendarContainerIncome.contains(e.target)&&e.target!==incomeDate&&e.target!==calendarIconIncome){ calendarContainerIncome.classList.add('hidden'); }});
+  renderIncomeCalendar();
+
+  btnQuickJJPSalary.addEventListener('click', ()=>{
+    const now=new Date();
+    const iso=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const salary={id:Date.now()+Math.random(), date: iso, amount: salaryConfig.jjp_wage, category:"JJP Wage", desc:"Weekly salary"};
+    const payg={id:Date.now()+Math.random(), date: iso, amount: salaryConfig.jjp_payg, category:"JJP PAYG", desc:"PAYG withheld"};
+    incomes.push(salary, payg); 
+    logAction('add_income', { amount: salary.amount, category: salary.category });
+    saveIncomes(); 
+    rerenderIncomeLog();
+  });
+
+  btnQuickEEMSalary.addEventListener('click', ()=>{
+    const now=new Date();
+    const iso=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const salary={id:Date.now()+Math.random(), date: iso, amount: salaryConfig.eem_wage, category:"EEM Wage", desc:"Weekly salary"};
+    const payg={id:Date.now()+Math.random(), date: iso, amount: salaryConfig.eem_payg, category:"EEM PAYG", desc:"PAYG withheld"};
+    incomes.push(salary, payg); 
+    logAction('add_income', { amount: salary.amount, category: salary.category });
+    saveIncomes(); 
+    rerenderIncomeLog();
+  });
+
+  incomeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const date = incomeDate.value;
+      const amount = parseFloat(incomeAmount.value);
+      const payg = parseFloat(incomePAYG.value) || 0;
+      const category = incomeCategory.value;
+      const desc = incomeDescription.value;
+
+      if (!date || !amount || !category) return;
+
+      const mainIncome = {id: Date.now() + Math.random(), date, amount, category, desc};
+      incomes.push(mainIncome);
+      logAction('add_income', { amount, category });
+
+      if (payg > 0) {
+          const paygCategory = category.includes('JJP') ? 'JJP PAYG' : 'EEM PAYG';
+          const paygEntry = {id: Date.now() + Math.random(), date, amount: payg, category: paygCategory, desc: "PAYG Withheld"};
+          incomes.push(paygEntry);
+          logAction('add_income', { amount: payg, category: paygCategory });
+      }
+
+      saveIncomes();
+      rerenderIncomeLog();
+      e.target.reset();
+  });
+</script>
+
+<script>
+  /* ===================== NET WORTH SECTION ===================== */
+  // ===== State & Elements =====
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.nw-panel');
+  const nwOpeningForm = document.getElementById('nwOpeningForm');
+  const nwSaveBtn = document.getElementById('nwSaveBtn');
+  const recordTallyBtn = document.getElementById('recordTallyBtn');
+  const lastTallyTimestampSpan = document.getElementById('lastTallyTimestamp');
+  const amexPendingDialog = document.getElementById('amexPendingDialog');
+  const amexPendingAmount = document.getElementById('amexPendingAmount');
+  const amexPendingSave = document.getElementById('amexPendingSave');
+  const amexPendingCancel = document.getElementById('amexPendingCancel');
+
+  const PA_ACCOUNTS = ['JJP CBA Debit','EEM CBA Debit','JJP ING Debit','EEM ING Debit','Westpac Debit'];
+  const CC_ACCOUNTS = ['Amex Credit', 'Velocity Credit'];
+  const INCOME_MAP = {
+    'JJP Wage': 'JJP CBA Debit',
+    'EEM Wage': 'EEM CBA Debit',
+    'JJP Credit Interest': 'JJP ING Debit',
+    'EEM Credit Interest': 'EEM ING Debit',
+    'Tax Return': 'JJP CBA Debit',
+    'Cashback/Rewards': 'JJP CBA Debit'
+  };
+
+  const obFields = {
+    'JJP CBA Debit': document.getElementById('ob_jjp_cba'),
+    'EEM CBA Debit': document.getElementById('ob_eem_cba'),
+    'JJP ING Debit': document.getElementById('ob_jjp_ing'),
+    'EEM ING Debit': document.getElementById('ob_eem_ing'),
+    'Westpac Debit': document.getElementById('ob_wbc'),
+    'Amex Credit': document.getElementById('ob_amex'),
+    'Velocity Credit': document.getElementById('ob_velocity'),
+    'Cash Holdings': document.getElementById('ob_cash_holdings'),
+    'Splitwise': document.getElementById('ob_splitwise')
+  };
+
+  // ===== Tab Navigation =====
+  function activateTab(btn) {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    panels.forEach(p => p.classList.add('hidden'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.remove('hidden');
+    recalculateAllNetWorth();
+  }
+  tabButtons.forEach(btn => btn.addEventListener('click', () => activateTab(btn)));
+
+  // ===== Opening Balance Config =====
+  function getOpeningBalances() {
+      return getData('nwOpeningBalances', {});
+  }
+
+  function loadOpeningBalances() {
+    const saved = getOpeningBalances();
+    Object.keys(obFields).forEach(k => {
+      const v = saved[k];
+      if (typeof v === 'number') obFields[k].value = v.toFixed(2);
+      else if (typeof v === 'string' && v !== '') obFields[k].value = v;
+      else obFields[k].value = '';
+    });
+  }
+  
+  nwSaveBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const payload = {};
+    Object.keys(obFields).forEach(k => {
+      const raw = obFields[k].value.trim();
+      payload[k] = (raw === '' || isNaN(parseFloat(raw))) ? 0 : Math.round(parseFloat(raw) * 100) / 100;
+    });
+    localStorage.setItem('nwOpeningBalances', JSON.stringify(payload));
+    logAction('save_balances');
+    alert('Opening balances saved.');
+    recalculateAllNetWorth();
+  });
+  
+  Object.values(obFields).forEach(enforce2dp);
+
+
+  // ===== MASTER CALCULATION FUNCTION =====
+  let netWorthTotals = {};
+  function recalculateAllNetWorth() {
+    const opens = getOpeningBalances();
+    const expenses = getData('expensesData', []);
+    const incomes = getData('incomeData', []);
+    const lendCash = getData('nwLendCash', []);
+    const swSet = getData('nwSplitwiseSettlements', []);
+    const ccSet = getData('nwCcSettlements', []);
+    const amexPending = getData('amexPendingAmount', 0);
+    const swSettledTotal = swSet.reduce((s, x) => s + x.amount, 0);
+    const ccSettledTotal = ccSet.reduce((s, x) => s + x.amount, 0);
+
+    // Primary Assets
+    let paTotal = 0;
+    const paResults = PA_ACCOUNTS.map(name => {
+        let calcVal = opens[name] || 0;
+        calcVal += incomes.filter(i => INCOME_MAP[i.category] === name).reduce((s, i) => s + i.amount, 0);
+
+        const deductions = expenses
+          .filter(ex => {
+            if (ex.mode !== name) return false;
+            if (ex.category === 'Splitwise') return false;
+            if (ex.isBankTransaction === false) return false;
+            return true;
+          })
+          .reduce((sum, ex) => {
+            return sum + (ex.bankTransactionAmount !== undefined ? ex.bankTransactionAmount : ex.amount);
+          }, 0);
+        calcVal -= deductions;
+        
+        const lendCashDeductions = lendCash.filter(lc => lc.mode === name).reduce((s, lc) => s + lc.amount, 0);
+        calcVal -= lendCashDeductions;
+
+        if (name === 'JJP CBA Debit') {
+            const creditDeductions = expenses.filter(ex => ex.category === 'JJP CBA Credit').reduce((s, ex) => s + ex.amount, 0);
+            calcVal -= creditDeductions;
+            calcVal += swSettledTotal;
+        }
+
+        if (name === 'Westpac Debit') {
+            calcVal -= ccSettledTotal;
+        }
+
+        paTotal += calcVal;
+        return { name, calcVal };
+    });
+    netWorthTotals.pa = { total: paTotal, accounts: paResults };
+    buildPrimaryAssetsTable();
+
+
+    // Liabilities
+    let totalLiability = 0;
+    const ccResults = CC_ACCOUNTS.map(name => {
+      
+      let expenseOnCard = expenses
+          .filter(ex => ex.mode === name)
+          .reduce((sum, ex) => {
+              const amount = ex.category === 'Splitwise' ? Math.abs(ex.amount) : ex.amount;
+              return sum + amount;
+          }, 0);
+      
+      const lentOnCard = lendCash.filter(lc => lc.mode === name).reduce((s, lc) => s + lc.amount, 0);
+      expenseOnCard += lentOnCard;
+      
+      const settlements = ccSet.filter(c => c.card === name).reduce((s, c) => s + c.amount, 0);
+      
+      const baseCalc = (opens[name] || 0) + expenseOnCard - settlements;
+      
+      let finalCalc = baseCalc;
+      if (name === 'Amex Credit') {
+          finalCalc = baseCalc - amexPending;
+      } else if (name === 'Velocity Credit') {
+          finalCalc = 15000 - baseCalc;
+      }
+      
+      totalLiability += baseCalc;
+      
+      return { name, calcVal: finalCalc };
+    });
+    netWorthTotals.cc = { total: totalLiability, accounts: ccResults };
+    buildLiabilitiesTable();
+
+    // Lend/Cash
+    const lcTotal = (opens['Cash Holdings'] || 0) + lendCash.reduce((s,x)=> s + x.amount, 0);
+    netWorthTotals.lc = { total: lcTotal };
+    buildLendCash();
+
+    // Splitwise
+    const swItems = expenses.filter(e => e.category === 'Splitwise').map(e => e.amount);
+    const swOthersOwe = Math.abs(swItems.filter(x => x < 0).reduce((s,x)=>s+x,0));
+    const swYouOwe = swItems.filter(x => x > 0).reduce((s,x)=>s+x,0);
+    const swTotal = (opens['Splitwise'] || 0) + swOthersOwe - swYouOwe - swSettledTotal;
+    netWorthTotals.sw = { total: swTotal, others: swOthersOwe, you: swYouOwe, settled: Math.abs(swSettledTotal) };
+    buildSplitwiseView();
+
+    // Overall Total
+    const overallTotal = netWorthTotals.pa.total + netWorthTotals.lc.total + netWorthTotals.sw.total - totalLiability;
+    document.getElementById('overallNetWorth').textContent = formatCurrency(overallTotal);
+  }
+
+  // ===== Tally and Export =====
+  function displayLastTally() {
+      const lastTally = getData('lastTallyTimestamp', null);
+      if(lastTally) {
+          lastTallyTimestampSpan.textContent = new Date(parseInt(lastTally)).toLocaleString('en-AU');
+      }
+  }
+
+  recordTallyBtn.addEventListener('click', () => {
+    const lastTallyTime = parseInt(getData('lastTallyTimestamp', '0'));
+    const currentTallyTime = Date.now();
+
+    const all = [];
+    const filterByTally = (item) => new Date(item.date).getTime() > lastTallyTime && new Date(item.date).getTime() <= currentTallyTime;
+
+    getData('expensesData',[]).filter(filterByTally).forEach(e => all.push({Timestamp: new Date(e.date).toISOString(), Type:'Expense', ID: e.id, Amount:e.amount, Category:e.category, Description:`${e.desc||''} (via ${e.mode})`}));
+    getData('incomeData',[]).filter(filterByTally).forEach(e => all.push({Timestamp: new Date(e.date).toISOString(), Type:'Income', ID: e.id, Amount:e.amount, Category:e.category, Description:e.desc||''}));
+    getData('nwCcSettlements',[]).filter(filterByTally).forEach(e => all.push({Timestamp: new Date(e.date).toISOString(), Type:'CC Settlement', ID: e.id, Amount:-e.amount, Category:e.card, Description:e.note||''}));
+    getData('nwLendCash',[]).filter(filterByTally).forEach(e => all.push({Timestamp: new Date(e.date).toISOString(), Type:'Lend/Cash', ID: e.id, Amount:-e.amount, Category:e.category, Description:e.desc||''}));
+    getData('nwSplitwiseSettlements',[]).filter(filterByTally).forEach(e => all.push({Timestamp: new Date(e.date).toISOString(), Type:'Splitwise Settlement', ID: e.id, Amount:e.amount, Category:'Splitwise', Description:e.desc||''}));
+
+    if(all.length === 0) { alert('No new transactions to export since last tally.'); return; }
+    all.sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp));
+
+    const header = Object.keys(all[0]).join(',');
+    const rows = all.map(row => Object.values(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+    const csv = `${header}\n${rows.join('\n')}`;
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const link = document.createElement("a");
+    const formattedDate = new Date(currentTallyTime).toISOString().slice(0,10);
+    link.href = URL.createObjectURL(blob);
+    link.download = `jmoney_tally_${formattedDate}.csv`;
+    link.click();
+    
+    logAction('record_tally');
+    localStorage.setItem('lastTallyTimestamp', JSON.stringify(currentTallyTime));
+    displayLastTally();
+  });
+
+
+  /* ===================== PRIMARY ASSETS ===================== */
+  function buildPrimaryAssetsTable(){
+    const paRowsContainer = document.getElementById('paRows');
+    const paTotalSpan = document.getElementById('paTotal');
+    const paNetDiscSpan = document.getElementById('paNetDisc');
+    const actuals = getData('nwActualBalances', {});
+    const results = netWorthTotals.pa;
+    if (!results) return;
+
+    paRowsContainer.innerHTML = '';
+    let netDiscrepancy = 0;
+
+    results.accounts.forEach(({name, calcVal}) => {
+      const actualVal = actuals[name] || 0;
+      const disc = actualVal - calcVal;
+      netDiscrepancy += disc;
+
+      const row = document.createElement('div');
+      row.className = 'nw-row rounded-2xl p-3';
+      row.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center">
+          <div class="text-sm col-span-1"><div class="font-semibold text-[#F4E2C9]">${name}</div></div>
+          <div class="text-center col-span-1"><div class="text-base font-bold text-[#F4E2C9]">${formatCurrency(calcVal)}</div></div>
+          <div class="text-right col-span-1">
+              <input type="number" step="0.01" inputmode="decimal" class="w-full p-2 rounded-lg text-right text-xs" placeholder="Actual" value="${actualVal.toFixed(2)}" data-actual="${name}">
+          </div></div>`;
+      paRowsContainer.appendChild(row);
+    });
+
+    paTotalSpan.textContent = formatCurrency(results.total);
+    paNetDiscSpan.textContent = formatCurrency(netDiscrepancy);
+
+    paRowsContainer.querySelectorAll('input[data-actual]').forEach(inp => {
+      enforce2dp(inp);
+      inp.addEventListener('blur', () => { updatePaFromInput(inp); });
+    });
+  }
+  function updatePaFromInput(inp){
+    const name = inp.getAttribute('data-actual');
+    const val = parseFloat(inp.value || '0') || 0;
+    const actuals = getData('nwActualBalances', {});
+    actuals[name] = Math.round(val*100)/100;
+    localStorage.setItem('nwActualBalances', JSON.stringify(actuals));
+    recalculateAllNetWorth();
+  }
+
+  /* ===================== LIABILITIES (Credit Cards) ===================== */
+  function buildLiabilitiesTable(){
+    const ccRowsContainer = document.getElementById('ccRows');
+    const ccTotalCalcSpan = document.getElementById('ccTotalCalc');
+    const results = netWorthTotals.cc;
+    if (!results) return;
+
+    ccRowsContainer.innerHTML = '';
+
+    results.accounts.forEach(({name, calcVal}) => {
+      const row = document.createElement('div');
+      row.className = 'nw-row rounded-2xl p-3';
+      
+      let actionHtml = '';
+      if(name === 'Amex Credit') {
+          actionHtml = `<button class="w-full text-xs py-1 px-2 rounded-md bg-sky-600 hover:bg-sky-500 transition" data-action="amex-pending">Pending</button>`;
+      }
+
+      row.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center">
+          <div class="text-sm col-span-1"><div class="font-semibold text-[#F4E2C9]">${name}</div></div>
+          <div class="text-center col-span-1">${actionHtml}</div>
+          <div class="text-right col-span-1"><div class="text-base font-bold text-[#F4E2C9]">${formatCurrency(calcVal)}</div></div>
+          </div>`;
+      ccRowsContainer.appendChild(row);
+    });
+
+    ccTotalCalcSpan.textContent = formatCurrency(results.total);
+
+    const amexPendingBtn = ccRowsContainer.querySelector('[data-action="amex-pending"]');
+    if (amexPendingBtn) {
+        amexPendingBtn.addEventListener('click', () => {
+            const currentPending = getData('amexPendingAmount', 0);
+            amexPendingAmount.value = currentPending > 0 ? currentPending.toFixed(2) : '';
+            amexPendingDialog.classList.remove('hidden');
+        });
+    }
+  }
+
+  // Amex Pending Dialog Logic
+  amexPendingCancel.addEventListener('click', () => amexPendingDialog.classList.add('hidden'));
+  amexPendingSave.addEventListener('click', () => {
+      const amount = parseFloat(amexPendingAmount.value) || 0;
+      localStorage.setItem('amexPendingAmount', JSON.stringify(amount));
+      amexPendingDialog.classList.add('hidden');
+      recalculateAllNetWorth();
+  });
+  enforce2dp(amexPendingAmount);
+
+
+  /* ===================== CC SETTLEMENTS ===================== */
+  const ccSettleBtn = document.getElementById('ccSettleBtn');
+  const ccSettleDialog = document.getElementById('ccSettleDialog');
+  const ccSettleAmount = document.getElementById('ccSettleAmount');
+  const ccSettleCard = document.getElementById('ccSettleCard');
+  const ccSettleSave = document.getElementById('ccSettleSave');
+  const ccSettleCancel = document.getElementById('ccSettleCancel');
+  const ccSettlementLog = document.getElementById('ccSettlementLog');
+  let ccSettlements = getData('nwCcSettlements', []);
+  function openCcSettle(){ ccSettleAmount.value = ""; ccSettleCard.value = "Amex Credit"; ccSettleDialog.classList.remove('hidden'); }
+  function closeCcSettle(){ ccSettleDialog.classList.add('hidden'); }
+  ccSettleBtn.addEventListener('click', openCcSettle);
+  ccSettleCancel.addEventListener('click', closeCcSettle);
+  enforce2dp(ccSettleAmount);
+  function saveCcSettlements(){ localStorage.setItem('nwCcSettlements', JSON.stringify(ccSettlements)); recalculateAllNetWorth(); }
+  function renderCcSettlementRow(entry){
+    const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
+    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.card}`;
+    item.querySelector('.delete-btn').onclick = () => deleteCcSettlement(entry.id);
+    ccSettlementLog.prepend(item);
+  }
+  function renderCcSettlementLog(){ ccSettlementLog.innerHTML = ""; ccSettlements.forEach(renderCcSettlementRow); }
+  function deleteCcSettlement(id){
+    const i = ccSettlements.findIndex(x => x.id === id);
+    if (i > -1) { ccSettlements.splice(i, 1); saveCcSettlements(); renderCcSettlementLog(); }
+  }
+  ccSettleSave.addEventListener('click', () => {
+    const amt = parseFloat(ccSettleAmount.value || '0');
+    if (isNaN(amt) || amt <= 0) { alert('Please enter a valid settlement amount.'); return; }
+    const now = new Date();
+    const iso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    ccSettlements.push({ id: Date.now() + Math.random(), date: iso, amount: Math.round(amt*100)/100, card: ccSettleCard.value });
+    saveCcSettlements(); renderCcSettlementLog(); closeCcSettle();
+  });
+
+  /* ===================== LEND / CASH HOLDINGS ===================== */
+  const lcLog = document.getElementById('lcLog');
+  const lcAddBtn = document.getElementById('lcAddBtn');
+  const lcDialog = document.getElementById('lcDialog');
+  const lcAmount = document.getElementById('lcAmount');
+  const lcCategory = document.getElementById('lcCategory');
+  const lcPaymentMode = document.getElementById('lcPaymentMode');
+  const lcDesc = document.getElementById('lcDesc');
+  const lcSave = document.getElementById('lcSave');
+  const lcCancel = document.getElementById('lcCancel');
+  let lendCash = getData('nwLendCash', []);
+  function openLc(){ lcAmount.value=""; lcCategory.value="Lend"; lcPaymentMode.value=""; lcDesc.value=""; lcDialog.classList.remove('hidden'); }
+  function closeLc(){ lcDialog.classList.add('hidden'); }
+  lcAddBtn.addEventListener('click', openLc);
+  lcCancel.addEventListener('click', closeLc);
+  enforce2dp(lcAmount);
+  function saveLendCash(){ localStorage.setItem('nwLendCash', JSON.stringify(lendCash)); recalculateAllNetWorth(); }
+  function renderLcRow(entry){
+    const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
+    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} (via ${entry.mode || 'N/A'}) ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
+    item.querySelector('.delete-btn').onclick = () => deleteLcEntry(entry.id);
+    lcLog.prepend(item);
+  }
+  function renderLcLog(){ lcLog.innerHTML = ""; lendCash.forEach(renderLcRow); }
+  function deleteLcEntry(id){
+    const i = lendCash.findIndex(x=>x.id===id);
+    if (i>-1) { lendCash.splice(i,1); saveLendCash(); renderLcLog(); }
+  }
+  lcSave.addEventListener('click', () => {
+    const amt = parseFloat(lcAmount.value || '0');
+    const mode = lcPaymentMode.value;
+    if (isNaN(amt) || amt === 0){ alert('Enter a non-zero amount.'); return; }
+    if (!mode) { alert('Please select a payment mode.'); return; }
+    const now = new Date();
+    const iso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    lendCash.push({ id: Date.now()+Math.random(), date: iso, amount: Math.round(amt*100)/100, category: lcCategory.value, desc: lcDesc.value||"", mode: mode });
+    saveLendCash(); renderLcLog(); closeLc();
+  });
+  function buildLendCash(){
+    const lcTotalSpan = document.getElementById('lcTotal');
+    const lcLendSpan  = document.getElementById('lcLend');
+    const lcCashSpan  = document.getElementById('lcCash');
+    const results = netWorthTotals.lc;
+    if(!results) return;
+    const lend  = lendCash.filter(x=>x.category==='Lend').reduce((s,x)=>s+x.amount,0);
+    const cash  = lendCash.filter(x=>x.category==='Cash Holdings').reduce((s,x)=>s+x.amount,0);
+    lcTotalSpan.textContent = formatCurrency(results.total);
+    lcLendSpan.textContent  = formatCurrency(lend);
+    lcCashSpan.textContent  = formatCurrency(cash);
+    renderLcLog();
+  }
+
+  /* ===================== SPLITWISE TOTALS & SETTLEMENTS ===================== */
+  const swSettleBtn = document.getElementById('swSettleBtn');
+  const swSettleDialog = document.getElementById('swSettleDialog');
+  const swSettleAmount = document.getElementById('swSettleAmount');
+  const swSettleDesc = document.getElementById('swSettleDesc');
+  const swSettleSave = document.getElementById('swSettleSave');
+  const swSettleCancel = document.getElementById('swSettleCancel');
+  const swSettlementLog = document.getElementById('swSettlementLog');
+  let swSettlements = getData('nwSplitwiseSettlements', []);
+  function openSwSettle(){ swSettleAmount.value=""; swSettleDesc.value=""; swSettleDialog.classList.remove('hidden'); }
+  function closeSwSettle(){ swSettleDialog.classList.add('hidden'); }
+  swSettleBtn.addEventListener('click', openSwSettle);
+  swSettleCancel.addEventListener('click', closeSwSettle);
+  enforce2dp(swSettleAmount);
+  function saveSwSettlements(){ localStorage.setItem('nwSplitwiseSettlements', JSON.stringify(swSettlements)); recalculateAllNetWorth(); }
+  function renderSwSettlementRow(entry){
+    const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
+    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
+    item.querySelector('.delete-btn').onclick=()=>deleteSwSettlement(entry.id);
+    swSettlementLog.prepend(item);
+  }
+  function renderSwSettlementLog(){ swSettlementLog.innerHTML=''; swSettlements.forEach(renderSwSettlementRow); }
+  function deleteSwSettlement(id){
+    const i=swSettlements.findIndex(x=>x.id===id);
+    if(i>-1){ swSettlements.splice(i,1); saveSwSettlements(); renderSwSettlementLog(); }
+  }
+  swSettleSave.addEventListener('click',()=>{
+    const amt=parseFloat(swSettleAmount.value||'0');
+    if(isNaN(amt) || amt===0){ alert('Enter a non-zero amount.'); return; }
+    const now=new Date();
+    const iso=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    swSettlements.push({ id:Date.now()+Math.random(), date:iso, amount:Math.round(amt*100)/100, desc:swSettleDesc.value||"" });
+    saveSwSettlements(); renderSwSettlementLog(); closeSwSettle();
+  });
+  function buildSplitwiseView(){
+    const swTotalSpan = document.getElementById('swTotal');
+    const results = netWorthTotals.sw;
+    if(!results) return;
+    
+    swTotalSpan.textContent  = formatCurrency(results.total);
+
+    swTotalSpan.classList.remove('text-green-400', 'text-red-400');
+    if (results.total > 0) {
+      swTotalSpan.classList.add('text-green-400');
+    } else if (results.total < 0) {
+      swTotalSpan.classList.add('text-red-400');
+    }
+    
+    renderSwSettlementLog();
+  }
+
+  // ===== Initial Load =====
+  document.addEventListener('DOMContentLoaded', () => {
+    showSection(homeSection);
+    populateHomePageNav();
+    loadIncomes();
+    loadOpeningBalances();
+    displayLastTally();
+    initializeCalculator();
+    updateExpenseViewForWeek(getWeekStart());
+    
+    expenses = getData("expensesData", []);
+    incomes = getData("incomeData", []);
+    ccSettlements = getData('nwCcSettlements', []);
+    lendCash = getData('nwLendCash', []);
+    swSettlements = getData('nwSplitwiseSettlements', []);
+    salaryConfig = getData("salaryConfig", { jjp_wage: 1614.00, jjp_payg: 484.00, eem_wage: 0, eem_payg: 0 });
+
+    activateTab(document.querySelector('[data-tab="tab-assets"]'));
+    recalculateAllNetWorth();
+    renderCcSettlementLog();
+    renderLcLog();
+       renderSwSettlementLog();
+  });
+
+  // === Net worth blur toggle ===
+  (function(){
+    const totalEl = document.getElementById('overallNetWorth');
+    const btn = document.getElementById('nwBlurToggle');
+    if (!totalEl || !btn) return;
+
+    function setBlur(on) {
+      btn.setAttribute('aria-pressed', String(!on));
+      if (on) {
+        totalEl.classList.add('blurred-number');
+        btn.textContent = 'Show';
+      } else {
+        totalEl.classList.remove('blurred-number');
+        btn.textContent = 'Hide';
+      }
+    }
+    // default: blurred
+    setBlur(true);
+    btn.addEventListener('click', () => {
+      const isBlurred = totalEl.classList.contains('blurred-number');
+      setBlur(!isBlurred);
+    });
+  })();
+
+</script>
+
+
+</body>
+</html>
