@@ -319,6 +319,253 @@
       pointer-events: none;
     }
 
+    /* =====================================================================
+       HYBRID MOBILE-APP UI — used on Expense and Income pages.
+       Three primitives:
+         1. .hero-card   — confident period summary with big number
+         2. .group       — iOS-style rounded card containing form rows or list rows
+         3. .group-row   — one tappable line inside a .group (with hairline divider)
+       ===================================================================== */
+
+    /* Section labels above .group cards (small caps, muted) */
+    .section-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 18px 4px 6px;
+    }
+
+    /* Hero card — dominant period summary */
+    .hero-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .hero-card .hero-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .hero-card .hero-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+    .hero-card .hero-meta {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+    .hero-card .week-nav {
+      display: flex; align-items: center; gap: 4px; flex: 0 0 auto;
+    }
+    .hero-card .week-nav button {
+      width: 28px; height: 28px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-size: 0.85rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-card .week-nav button:hover { background: var(--surface-3); color: var(--text-strong); }
+
+    /* Group — rounded card containing rows */
+    .group {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    /* Hairline between adjacent rows */
+    .group > * + * {
+      border-top: 1px solid var(--border);
+    }
+
+    /* Form row — label on the left, input/select fills the rest */
+    .group-row {
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 0 14px;
+      gap: 10px;
+      background: transparent;
+    }
+    .group-row > .row-label {
+      flex: 0 0 auto;
+      width: 110px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .group-row > .row-value,
+    .group-row > input,
+    .group-row > select,
+    .group-row > textarea {
+      flex: 1 1 auto;
+      min-width: 0;
+      background: transparent !important;
+      border: none !important;
+      padding: 12px 0 !important;
+      color: var(--text-strong) !important;
+      font-size: 0.95rem;
+      width: 100%;
+      box-shadow: none !important;
+      outline: none;
+      border-radius: 0 !important;
+      text-align: right;
+    }
+    .group-row > input::placeholder,
+    .group-row > textarea::placeholder {
+      color: var(--placeholder);
+      text-align: right;
+    }
+    /* Select arrow on the right */
+    .group-row > select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%23999' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 0 center !important;
+      padding-right: 18px !important;
+    }
+    .group-row.tappable { cursor: pointer; }
+    .group-row.tappable:hover { background: var(--surface-2); }
+
+    /* Toggle row — checkbox on the right */
+    .group-row.toggle-row > .row-label { flex: 1 1 auto; width: auto; text-align: left; font-weight: 500; color: var(--text-strong); }
+    .group-row.toggle-row input[type="checkbox"] {
+      flex: 0 0 auto;
+      width: 18px; height: 18px;
+      margin: 0;
+    }
+
+    /* Splitwise-review row inside a .group */
+    .group-info {
+      padding: 12px 14px;
+      background: transparent;
+      font-size: 0.8rem;
+    }
+    .group-info p { margin: 0; }
+    .group-info .review-final { font-weight: 700; font-size: 0.95rem; color: var(--text-strong); margin-top: 4px; }
+
+    /* Quick-action chip row */
+    .chip-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .chip-btn {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-strong);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 120ms;
+      text-align: center;
+    }
+    .chip-btn:hover { background: var(--surface-3); }
+
+    /* Primary action — single confident button */
+    .primary-action {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 14px;
+      background: var(--text-strong);
+      color: var(--surface-1);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      box-shadow: var(--shadow-button);
+      transition: opacity 120ms, transform 120ms;
+    }
+    .primary-action:hover { opacity: 0.9; transform: translateY(-1px); }
+    .primary-action:active { transform: translateY(0); }
+
+    /* Secondary actions — quiet outlined row */
+    .secondary-row { display: flex; gap: 6px; }
+    .secondary-row > button {
+      flex: 1 1 0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: background 120ms;
+    }
+    .secondary-row > button:hover { background: var(--surface-2); color: var(--text-strong); }
+    .secondary-row > button.danger { color: var(--danger); border-color: var(--danger); opacity: 0.85; }
+    .secondary-row > button.danger:hover { background: var(--danger); color: #fff; opacity: 1; }
+
+    /* Logged entries — list rows inside a .group */
+    .entry-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      min-height: 48px;
+      position: relative;
+    }
+    .entry-row .entry-cat-dot {
+      flex: 0 0 auto;
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: var(--text-muted);
+    }
+    .entry-row .entry-main { flex: 1 1 auto; min-width: 0; }
+    .entry-row .entry-title {
+      font-size: 0.88rem; font-weight: 600; color: var(--text-strong);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .entry-row .entry-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+    .entry-row .entry-amount { flex: 0 0 auto; font-size: 0.95rem; font-weight: 700; color: var(--text-strong); }
+    .entry-row .entry-delete {
+      flex: 0 0 auto; color: var(--danger); font-size: 1.1rem; line-height: 1;
+      opacity: 0.7; padding: 4px 6px; border-radius: 6px;
+    }
+    .entry-row .entry-delete:hover { opacity: 1; background: var(--surface-2); }
+
+    /* Light tweak — slightly cleaner card backgrounds in light mode */
+    [data-theme="light"] .group { background: #FFFFFF; box-shadow: 0 2px 10px rgba(74, 20, 140, 0.08); }
+    [data-theme="light"] .hero-card { background: #FFFFFF; }
+
+    /* Pill-style tabs (Net Worth subnav) */
+    .tab-pill {
+      flex: 0 0 auto;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      transition: all 120ms;
+      white-space: nowrap;
+    }
+    .tab-pill:hover { background: var(--surface-2); color: var(--text); }
+    .tab-pill.active {
+      background: var(--text-strong);
+      color: var(--surface-1);
+      border-color: var(--text-strong);
+    }
+
     /* === Desktop split-view ===
        When body has .split-mode AND viewport ≥768px, the layout becomes
        two columns: left ~30% holds the active app section, right ~70%
@@ -622,96 +869,116 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
     </div>
     <div class="panel-hero-text">
-      <h1>Log an Expense</h1>
+      <h1>Expenses</h1>
     </div>
   </div>
 
-  <section class="mb-6 text-center">
-    <div class="flex items-center justify-center gap-4">
-        <button id="prevWeekBtn" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&lt;</button>
-        <p class="text-sm font-medium">Week starting <span id="weekStartDate" class="font-semibold text-white"></span></p>
-        <button id="nextWeekBtn" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&gt;</button>
+  <!-- Hero card: total + week navigator -->
+  <div class="hero-card">
+    <div>
+      <div class="hero-label">This Week</div>
+      <div class="hero-value"><span id="totalAmount">$0.00</span></div>
+      <div class="hero-meta">Week of <span id="weekStartDate"></span></div>
     </div>
-  </section>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-    <section class="p-4 rounded-2xl text-center groovy-card">
-        <h2 class="text-sm font-semibold text-white">Total Expenses This Week</h2>
-        <p class="text-2xl font-extrabold text-white mt-1"><span id="totalAmount">$0.00</span></p>
-    </section>
-    <section class="p-3 rounded-2xl groovy-card text-xs">
-        <h3 class="text-sm font-semibold text-white mb-1 text-center">Weekly Breakdown</h3>
-        <div id="weeklyBreakdown" class="space-y-1"></div>
-    </section>
+    <div class="week-nav">
+      <button id="prevWeekBtn" type="button" aria-label="Previous week">‹</button>
+      <button id="nextWeekBtn" type="button" aria-label="Next week">›</button>
+    </div>
   </div>
 
-  <form id="expenseForm" class="space-y-3">
-    <div class="relative">
-      <label for="expenseDate" class="block text-xs font-medium mb-1">Date</label>
-      <div class="relative">
-        <input type="text" id="expenseDate" placeholder="Select Date" required readonly class="w-full p-3 rounded-xl cursor-pointer">
-        <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </div>
-      <div id="calendar-container" class="absolute z-10 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg mt-2 hidden">
-        <div class="flex justify-between items-center p-2">
-          <button type="button" id="prev-month-btn" class="p-2 rounded hover:bg-slate-700">‹</button>
-          <span id="current-month-year" class="font-semibold"></span>
-          <button type="button" id="next-month-btn" class="p-2 rounded hover:bg-slate-700">›</button>
+  <!-- Breakdown -->
+  <div class="section-label">Breakdown</div>
+  <div class="group">
+    <div id="weeklyBreakdown" class="space-y-0"></div>
+  </div>
+
+  <!-- New expense form, as grouped rows -->
+  <div class="section-label">New Expense</div>
+  <form id="expenseForm">
+    <div class="group">
+      <div class="group-row tappable">
+        <div class="row-label">Date</div>
+        <div class="relative" style="flex:1 1 auto;">
+          <input type="text" id="expenseDate" placeholder="Today" required readonly style="cursor:pointer;">
+          <div id="calendar-container" class="absolute z-10 right-0 mt-1 rounded-xl shadow-lg hidden" style="background:var(--surface-1); border:1px solid var(--border); width:280px;">
+            <div class="flex justify-between items-center p-2">
+              <button type="button" id="prev-month-btn" class="p-2 rounded hover:bg-slate-700">‹</button>
+              <span id="current-month-year" class="font-semibold"></span>
+              <button type="button" id="next-month-btn" class="p-2 rounded hover:bg-slate-700">›</button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
+              <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            </div>
+            <div id="calendar-days" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+          </div>
         </div>
-        <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-        <div id="calendar-days" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+      </div>
+      <div class="group-row">
+        <div class="row-label">Amount</div>
+        <input type="number" id="expenseAmount" placeholder="0.00" required step="0.01" inputmode="decimal">
+      </div>
+      <div class="group-row toggle-row">
+        <div class="row-label">Splitwise purchase?</div>
+        <input type="checkbox" id="splitwiseCheckbox">
+      </div>
+      <div class="group-row">
+        <div class="row-label">Category</div>
+        <select id="expenseCategory" required>
+          <option value="" disabled selected>Choose…</option>
+          <option>Rent</option><option>Health Insurance</option><option>Digital Subscription</option><option>Gym</option>
+          <option>Bills</option><option>Fuel</option><option>Car Related</option>
+          <option>Grocery & Snacks</option><option>Dine Out</option><option>Personal</option><option>Other</option><option>Transportation</option>
+          <option>Contingency</option>
+          <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
+          <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
+        </select>
+      </div>
+      <div class="group-row">
+        <div class="row-label">Payment</div>
+        <select id="paymentMode" required>
+          <option value="" disabled selected>Choose…</option>
+          <option>Amex Credit</option><option>Velocity Credit</option><option>JJP CBA Debit</option>
+          <option>Westpac Debit</option><option>JJP ING Debit</option><option>EEM ING Debit</option>
+        </select>
+      </div>
+      <div class="group-row">
+        <div class="row-label">Description</div>
+        <input type="text" id="expenseDescription" placeholder="Optional">
       </div>
     </div>
 
-    <input type="number" id="expenseAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
-    
-    <div class="flex items-center space-x-2">
-      <input type="checkbox" id="splitwiseCheckbox" class="h-4 w-4">
-      <label for="splitwiseCheckbox">Make this a Splitwise purchase?</label>
+    <!-- Splitwise breakdown — only shown when applicable -->
+    <div id="splitwiseReview" class="hidden mt-3">
+      <div class="group">
+        <div class="group-info">
+          <p style="font-weight:600;">Splitwise breakdown</p>
+          <p style="opacity:0.75;">Original: <span id="reviewOriginal">$0.00</span> · Adjustment: <span id="reviewAdjustment">$0.00</span></p>
+          <p class="review-final">Your share: <span id="reviewFinal">$0.00</span></p>
+          <p style="font-style:italic; opacity:0.7;" id="reviewDesc"></p>
+        </div>
+      </div>
     </div>
 
-    <select id="expenseCategory" required class="w-full p-3 rounded-xl">
-      <option value="" disabled selected>Select Category</option>
-      <option>Rent</option><option>Health Insurance</option><option>Digital Subscription</option><option>Gym</option>
-      <option>Bills</option><option>Fuel</option><option>Car Related</option>
-      <option>Grocery & Snacks</option><option>Dine Out</option><option>Personal</option><option>Other</option><option>Transportation</option>
-      <option>Contingency</option>
-      <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
-      <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
-    </select>
-
-    <select id="paymentMode" required class="w-full p-3 rounded-xl">
-      <option value="" disabled selected>Select Payment Mode</option>
-      <option>Amex Credit</option><option>Velocity Credit</option><option>JJP CBA Debit</option>
-      <option>Westpac Debit</option><option>JJP ING Debit</option><option>EEM ING Debit</option>
-    </select>
-
-    <input type="text" id="expenseDescription" placeholder="Description (Optional)" class="w-full p-3 rounded-xl">
-
-    <div id="splitwiseReview" class="hidden p-4 rounded-xl bg-slate-700">
-      <p class="text-sm font-bold">Splitwise Breakdown</p>
-      <p class="text-xs mt-1">Original: <span id="reviewOriginal">$0.00</span> | Adjustment: <span id="reviewAdjustment">$0.00</span></p>
-      <p class="font-bold text-lg mt-2">Final Expense (your share): <span id="reviewFinal">$0.00</span></p>
-      <p class="text-xs italic" id="reviewDesc"></p>
+    <!-- Primary action -->
+    <div class="mt-4">
+      <button type="submit" class="primary-action">Add Expense</button>
     </div>
-
-    <button type="submit" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Add Expense</button>
   </form>
 
-  <div class="flex space-x-2 mt-4">
-    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg text-sm">Export CSV</button>
-    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg text-sm">🍩 Donut Chart</button>
-    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Clear Weekly</button>
+  <!-- Secondary actions -->
+  <div class="secondary-row mt-3">
+    <button id="exportCsvBtn" type="button">Export CSV</button>
+    <button id="donutChartBtn" type="button">🍩 Donut</button>
+    <button id="clearBtn" type="button" class="danger">Clear Week</button>
   </div>
 
-  <div class="text-center mt-6">
-    <button id="toggleLogsBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">View Expense Logs</button>
+  <!-- Toggle for the log -->
+  <div class="text-center mt-5">
+    <button id="toggleLogsBtn" class="text-xs underline" style="color:var(--text-muted);">View expense logs</button>
   </div>
-  <section id="expenseLog" class="mt-4 space-y-2 hidden"></section>
+
+  <!-- Expense log container — entries get rendered here as .entry-row inside a .group -->
+  <div id="expenseLog" class="mt-3 hidden"></div>
 </div>
 
 <!-- Donut Chart dialog -->
@@ -751,72 +1018,72 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m0 0a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 9M3 9V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75V9"/></svg>
     </div>
     <div class="panel-hero-text">
-      <h1>Log Income</h1>
+      <h1>Income</h1>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record JJP Salary</button>
-    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record EEM Salary</button>
+  <!-- Quick actions -->
+  <div class="section-label">Quick Actions</div>
+  <div class="chip-row">
+    <button id="btnQuickJJPSalary" type="button" class="chip-btn">JJP Salary</button>
+    <button id="btnQuickEEMSalary" type="button" class="chip-btn">EEM Salary</button>
+    <button id="btnQuickJJPInterest" type="button" class="chip-btn">JJP Interest</button>
+    <button id="btnQuickEEMInterest" type="button" class="chip-btn">EEM Interest</button>
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-    <button id="btnQuickJJPInterest" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">💰 Credit Interest JJP</button>
-    <button id="btnQuickEEMInterest" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">💰 Credit Interest EEM</button>
-  </div>
-  <div class="text-center mb-4">
-    <button id="configureSalariesBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">Configure Salaries</button>
+  <div class="text-center mt-3">
+    <button id="configureSalariesBtn" class="text-xs underline" style="color:var(--text-muted);">Configure salaries</button>
   </div>
 
-
-  <form id="incomeForm" class="space-y-4">
-    <div class="relative">
-      <label for="incomeDate" class="block text-sm font-medium mb-1">Date</label>
-      <div class="relative">
-        <input type="text" id="incomeDate" placeholder="Select Date" required readonly class="w-full p-3 rounded-xl cursor-pointer">
-        <svg id="calendar-icon-income" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </div>
-      <div id="calendar-container-income" class="absolute z-10 w-full bg-slate-800 border border-slate-700 rounded-xl shadow-lg mt-2 hidden">
-        <div class="flex justify-between items-center p-2">
-          <button type="button" id="prev-month-btn-income" class="p-2 rounded hover:bg-slate-700">‹</button>
-          <span id="current-month-year-income" class="font-semibold"></span>
-          <button type="button" id="next-month-btn-income" class="p-2 rounded hover:bg-slate-700">›</button>
+  <!-- Manual entry -->
+  <div class="section-label">New Income</div>
+  <form id="incomeForm">
+    <div class="group">
+      <div class="group-row tappable">
+        <div class="row-label">Date</div>
+        <div class="relative" style="flex:1 1 auto;">
+          <input type="text" id="incomeDate" placeholder="Today" required readonly style="cursor:pointer;">
+          <div id="calendar-container-income" class="absolute z-10 right-0 mt-1 rounded-xl shadow-lg hidden" style="background:var(--surface-1); border:1px solid var(--border); width:280px;">
+            <div class="flex justify-between items-center p-2">
+              <button type="button" id="prev-month-btn-income" class="p-2 rounded hover:bg-slate-700">‹</button>
+              <span id="current-month-year-income" class="font-semibold"></span>
+              <button type="button" id="next-month-btn-income" class="p-2 rounded hover:bg-slate-700">›</button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
+              <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            </div>
+            <div id="calendar-days-income" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+          </div>
         </div>
-        <div class="grid grid-cols-7 text-center text-sm font-medium px-1 pb-1">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-        <div id="calendar-days-income" class="grid grid-cols-7 text-center gap-y-1 p-2"></div>
+      </div>
+      <div class="group-row">
+        <div class="row-label">Amount</div>
+        <input type="number" id="incomeAmount" placeholder="0.00" required step="0.01" inputmode="decimal">
+      </div>
+      <div class="group-row">
+        <div class="row-label">PAYG</div>
+        <input type="number" id="incomePAYG" placeholder="0.00" step="0.01" inputmode="decimal">
+      </div>
+      <div class="group-row">
+        <div class="row-label">Category</div>
+        <select id="incomeCategory" required>
+          <option value="" disabled selected>Choose…</option>
+          <option>JJP Wage</option><option>EEM Wage</option><option>Tax Return</option>
+          <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>Cashback/Rewards</option><option>JJP PAYG</option>
+        </select>
+      </div>
+      <div class="group-row">
+        <div class="row-label">Description</div>
+        <input type="text" id="incomeDescription" placeholder="Optional">
       </div>
     </div>
 
-    <div>
-      <label for="incomeAmount" class="block text-sm font-medium mb-1">Amount</label>
-      <input type="number" id="incomeAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
+    <div class="mt-4">
+      <button type="submit" class="primary-action">Add Income</button>
     </div>
-
-    <div>
-      <label for="incomePAYG" class="block text-sm font-medium mb-1">PAYG (Tax withheld)</label>
-      <input type="number" id="incomePAYG" placeholder="PAYG" step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
-    </div>
-
-    <div>
-      <label for="incomeCategory" class="block text-sm font-medium mb-1">Category (Affects Account)</label>
-      <select id="incomeCategory" required class="w-full p-3 rounded-xl">
-        <option value="" disabled selected>Select Category</option>
-        <option>JJP Wage</option><option>EEM Wage</option><option>Tax Return</option>
-        <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>Cashback/Rewards</option><option>JJP PAYG</option>
-      </select>
-    </div>
-
-    <div>
-      <label for="incomeDescription" class="block text-sm font-medium mb-1">Description (Optional)</label>
-      <input type="text" id="incomeDescription" placeholder="Description" class="w-full p-3 rounded-xl">
-    </div>
-
-    <button type="submit" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Add Income</button>
   </form>
-  <section class="mt-8 space-y-2" id="incomeLog"></section>
+
+  <!-- Recent income log -->
+  <div id="incomeLog" class="mt-5"></div>
 </div>
 
 <!-- ============ NET WORTH ============ -->
@@ -830,52 +1097,44 @@
     </div>
   </div>
 
-  <header class="mb-4">
-    <div class="mt-4 text-center p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-lg relative">
-      <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
-      <p class="text-xs opacity-80">Overall Net Worth</p>
-      <p class="text-2xl font-extrabold text-white" style="text-shadow: 0 0 10px rgba(195, 180, 210, 0.4), 0 0 4px rgba(195, 180, 210, 0.2);">
-        <span id="overallNetWorth">$0.00</span>
-      </p>
+  <header class="mb-2">
+    <div class="hero-card">
+      <div style="flex:1 1 auto; min-width:0;">
+        <div class="hero-label">Overall Net Worth</div>
+        <div class="hero-value"><span id="overallNetWorth">$0.00</span></div>
+        <div class="hero-meta">Last tally: <span id="lastTallyTimestamp">Never</span></div>
+      </div>
+      <button id="nwBlurToggle" type="button" aria-pressed="true" title="Show/Hide"
+              style="flex:0 0 auto; align-self:flex-start; padding:4px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-size:0.7rem; font-weight:600;">Show</button>
     </div>
 
-    <div class="mt-4">
-
-        <button id="recordTallyBtn" class="w-full px-3 py-3 rounded-lg border border-[#5A5157] text-[#F4E2C9] hover:bg-[#5A5157] transition text-sm">Record a Tally and Export CSV</button>
-        <p class="text-xs text-center mt-2 opacity-70">Last Tally: <span id="lastTallyTimestamp">Never</span></p>
+    <div class="mt-3">
+      <button id="recordTallyBtn" type="button" class="primary-action" style="background: var(--surface-2); color: var(--text-strong); border: 1px solid var(--border); box-shadow: none;">Record a Tally and Export CSV</button>
     </div>
   </header>
 
   <!-- Tabs -->
-  <div id="nwTabsBar" class="mb-4">
-    <div class="flex gap-2 overflow-x-auto pb-2">
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-assets">Primary Assets</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-cash">Lend/Cash</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-splitwise">Splitwise</button>
-      <button class="tab-btn whitespace-nowrap px-3 py-2 text-sm rounded-xl bg-[#3D363A] hover:bg-[#5A5157]" data-tab="tab-liabilities">Liabilities</button>
+  <div id="nwTabsBar" class="mb-4 mt-2">
+    <div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+      <button class="tab-pill" data-tab="tab-assets">Primary Assets</button>
+      <button class="tab-pill" data-tab="tab-cash">Lend/Cash</button>
+      <button class="tab-pill" data-tab="tab-splitwise">Splitwise</button>
+      <button class="tab-pill" data-tab="tab-liabilities">Liabilities</button>
     </div>
   </div>
 
   <!-- Panels -->
   <div id="tab-assets" class="nw-panel">
-    <div class="grid grid-cols-2 gap-3 mb-3">
-      <div class="mini-stat rounded-2xl p-3">
-        <div class="text-xs opacity-80 mb-1">Primary Asset Total</div>
-        <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paTotal">$0.00</span></div>
-      </div>
-      <div class="mini-stat rounded-2xl p-3">
-        <div class="text-xs opacity-80 mb-1">Net Discrepancy</div>
-        <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="paNetDisc">$0.00</span></div>
+    <div class="hero-card">
+      <div style="flex:1 1 auto;">
+        <div class="hero-label">Primary Asset Total</div>
+        <div class="hero-value"><span id="paTotal">$0.00</span></div>
+        <div class="hero-meta">Net discrepancy: <span id="paNetDisc">$0.00</span></div>
       </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-2 px-1 mb-2 text-xs">
-      <div class="nw-col-h">Account</div>
-      <div class="nw-col-h text-center">Calculated</div>
-      <div class="nw-col-h text-right">Actual</div>
-    </div>
-
-    <div id="paRows" class="space-y-2"></div>
+    <div class="section-label">By Account</div>
+    <div id="paRows" class="group-stack"></div>
   </div>
 
   <!-- Lend / Cash Holdings -->
@@ -891,33 +1150,21 @@
     </div>
 
     <!-- Totals -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-      <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Total (Lend + Cash)</div>
-        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcTotal">$0.00</span></div>
+    <div class="hero-card">
+      <div style="flex:1 1 auto;">
+        <div class="hero-label">Total (Lend + Cash)</div>
+        <div class="hero-value"><span id="lcTotal">$0.00</span></div>
+        <div class="hero-meta">Lend: <span id="lcLend">$0.00</span> · Cash: <span id="lcCash">$0.00</span></div>
       </div>
-      <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Lend Subtotal</div>
-        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcLend">$0.00</span></div>
-      </div>
-      <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Cash Holdings Subtotal</div>
-        <div class="text-2xl font-extrabold text-[#F4E2C9]"><span id="lcCash">$0.00</span></div>
-      </div>
+    </div>
+
+    <div class="mt-3">
+      <button id="lcAddBtn" type="button" class="primary-action">Add Lend / Cash Holding</button>
     </div>
 
     <!-- Log -->
-    <div class="p-4 rounded-2xl border border-[#5A5157]">
-      <h2 class="text-xl font-semibold mb-2">Lend / Cash Holdings Log</h2>
-      <section id="lcLog" class="space-y-2"></section>
-    </div>
-
-    <!-- Add button at bottom -->
-    <div class="mt-6 flex justify-center">
-      <button id="lcAddBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
-        Add Lend/Cash Holding
-      </button>
-    </div>
+    <div class="section-label">Recent</div>
+    <div id="lcLog"></div>
   </div>
 
   <!-- Splitwise -->
@@ -932,23 +1179,20 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-1 gap-3 mb-3">
-      <div class="mini-stat rounded-2xl p-4">
-        <div class="text-xs opacity-80 mb-1">Splitwise Total</div>
-        <div class="text-2xl font-extrabold"><span id="swTotal">$0.00</span></div>
+    <!-- Total -->
+    <div class="hero-card">
+      <div style="flex:1 1 auto;">
+        <div class="hero-label">Splitwise Total</div>
+        <div class="hero-value"><span id="swTotal">$0.00</span></div>
       </div>
     </div>
 
-    <div class="mt-2 flex justify-center">
-      <button id="swSettleBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
-        Record Splitwise Settlement
-      </button>
+    <div class="mt-3">
+      <button id="swSettleBtn" type="button" class="primary-action">Record Splitwise Settlement</button>
     </div>
 
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold mb-2">Splitwise Settlement Log</h3>
-      <section id="swSettlementLog" class="space-y-2"></section>
-    </div>
+    <div class="section-label">Settlement Log</div>
+    <div id="swSettlementLog"></div>
   </div>
 
   <!-- ===== LIABILITIES ===== -->
@@ -963,30 +1207,23 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 max-w-xs mx-auto gap-3 mb-3">
-        <div class="mini-stat rounded-2xl p-3">
-          <div class="text-xs opacity-80 mb-1">Total CC (Calculated)</div>
-          <div class="text-xl font-extrabold text-[#F4E2C9]"><span id="ccTotalCalc">$0.00</span></div>
-        </div>
+    <!-- Total -->
+    <div class="hero-card">
+      <div style="flex:1 1 auto;">
+        <div class="hero-label">Total CC (Calculated)</div>
+        <div class="hero-value"><span id="ccTotalCalc">$0.00</span></div>
       </div>
-
-    <div class="grid grid-cols-3 gap-2 px-1 mb-2 text-xs">
-      <div class="nw-col-h col-span-2">Card</div>
-      <div class="nw-col-h text-right">Calculated</div>
     </div>
 
-    <div id="ccRows" class="space-y-2"></div>
+    <div class="section-label">By Card</div>
+    <div id="ccRows" class="group-stack"></div>
 
-    <div class="mt-6 flex justify-center">
-      <button id="ccSettleBtn" class="px-4 py-3 rounded-xl groovy-button text-white font-semibold">
-        Record Credit Card Settlement
-      </button>
+    <div class="mt-3">
+      <button id="ccSettleBtn" type="button" class="primary-action">Record Credit Card Settlement</button>
     </div>
 
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold mb-2">Settlement Log</h3>
-      <section id="ccSettlementLog" class="space-y-2"></section>
-    </div>
+    <div class="section-label">Settlement Log</div>
+    <div id="ccSettlementLog"></div>
   </div>
 </div>
 
@@ -1001,30 +1238,57 @@
       </div>
     </div>
 
-    <form id="nwOpeningForm" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-      <div><label class="label-sm" for="ob_jjp_cba">JJP CBA Debit</label>
-        <input id="ob_jjp_cba" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_eem_cba">EEM CBA Debit</label>
-        <input id="ob_eem_cba" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_jjp_ing">JJP ING Debit</label>
-        <input id="ob_jjp_ing" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_eem_ing">EEM ING Debit</label>
-        <input id="ob_eem_ing" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_wbc">Westpac Debit</label>
-        <input id="ob_wbc" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <hr class="border-slate-500">
-      <div><label class="label-sm" for="ob_amex">Amex Credit</label>
-        <input id="ob_amex" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_velocity">Velocity Credit</label>
-        <input id="ob_velocity" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <hr class="border-slate-500">
-      <div><label class="label-sm" for="ob_cash_holdings">Cash Holdings</label>
-        <input id="ob_cash_holdings" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
-      <div><label class="label-sm" for="ob_splitwise">Splitwise</label>
-        <input id="ob_splitwise" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg"></div>
+    <form id="nwOpeningForm">
+      <div class="section-label">Debit Accounts</div>
+      <div class="group">
+        <div class="group-row">
+          <div class="row-label">JJP CBA</div>
+          <input id="ob_jjp_cba" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">EEM CBA</div>
+          <input id="ob_eem_cba" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">JJP ING</div>
+          <input id="ob_jjp_ing" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">EEM ING</div>
+          <input id="ob_eem_ing" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">Westpac</div>
+          <input id="ob_wbc" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="section-label">Credit Accounts</div>
+      <div class="group">
+        <div class="group-row">
+          <div class="row-label">Amex Credit</div>
+          <input id="ob_amex" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">Velocity Credit</div>
+          <input id="ob_velocity" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="section-label">Other</div>
+      <div class="group">
+        <div class="group-row">
+          <div class="row-label">Cash Holdings</div>
+          <input id="ob_cash_holdings" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="group-row">
+          <div class="row-label">Splitwise</div>
+          <input id="ob_splitwise" type="number" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
     </form>
-    <div class="flex gap-2 pt-4">
-        <button id="nwSaveBtn" class="flex-1 groovy-button text-white font-semibold py-3 rounded-xl">Save Balances</button>
+    <div class="mt-4">
+      <button id="nwSaveBtn" type="button" class="primary-action">Save Balances</button>
     </div>
 </div>
 
@@ -1821,7 +2085,9 @@
   document.getElementById('prev-month-btn').onclick=()=>{currentDate.setMonth(currentDate.getMonth()-1); renderCalendar();};
   document.getElementById('next-month-btn').onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1); renderCalendar();};
   expenseDateInput.onclick=()=>calendarContainer.classList.toggle('hidden');
-  calendarIcon.onclick=()=>calendarContainer.classList.toggle('hidden');
+  if (calendarIcon) {
+    calendarIcon.onclick=()=>calendarContainer.classList.toggle('hidden');
+  }
   document.addEventListener('click',(e)=>{ if(!calendarContainer.contains(e.target)&&e.target!==expenseDateInput&&e.target!==calendarIcon){calendarContainer.classList.add('hidden');}});
   renderCalendar();
 
@@ -1867,15 +2133,28 @@
           const catTotal = weeklyExpenses
               .filter(e => childCats.includes(e.category))
               .reduce((sum, e) => sum + e.amount, 0);
-          
+
+          // Skip categories with zero spend to keep the breakdown card focused.
+          if (catTotal === 0) return;
+
           const row = document.createElement('div');
-          row.className = 'flex justify-between items-center';
+          row.className = 'entry-row';
           row.innerHTML = `
-              <span class="opacity-80">${parentCat}:</span>
-              <span class="font-semibold text-white">${formatCurrency(catTotal)}</span>
+              <span class="entry-cat-dot"></span>
+              <div class="entry-main">
+                <div class="entry-title">${parentCat}</div>
+              </div>
+              <span class="entry-amount">${formatCurrency(catTotal)}</span>
           `;
           breakdownContainer.appendChild(row);
       });
+      // Empty state
+      if (!breakdownContainer.children.length) {
+        const empty = document.createElement('div');
+        empty.className = 'entry-row';
+        empty.innerHTML = '<div class="entry-main"><div class="entry-sub" style="text-align:center;width:100%;">No expenses logged this week</div></div>';
+        breakdownContainer.appendChild(empty);
+      }
   }
   
   function renderExpenseLogForWeek(weekStart, weekEnd) {
@@ -1907,13 +2186,33 @@
   }
 
   function renderRow(entry){
-    const item=document.createElement('div'); item.className=`log-item ${entry.cssExtra||""}`; item.dataset.id=entry.id;
-    item.innerHTML=`<span class="delete-btn" data-id="${entry.id}">×</span>
-      <strong class="text-xs text-slate-400 block">${entry.id}</strong>
-      <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} | ${entry.mode}
-      ${entry.entryType?`<span class="ml-2 text-xs px-2 py-1 rounded bg-slate-600">${entry.entryType}</span>`:""}
-      ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
-    item.querySelector('.delete-btn').onclick=()=>deleteEntry(entry.id); expenseLog.prepend(item);
+    // Lazily wrap the log container in a .group on first render so each session
+    // produces a single rounded card around all entries (matching the "grouped
+    // list" pattern used elsewhere on the page).
+    let groupEl = expenseLog.querySelector('.group');
+    if (!groupEl) {
+      expenseLog.innerHTML = '';
+      groupEl = document.createElement('div');
+      groupEl.className = 'group';
+      expenseLog.appendChild(groupEl);
+    }
+
+    const item = document.createElement('div');
+    item.className = `entry-row ${entry.cssExtra || ''}`;
+    item.dataset.id = entry.id;
+    const sub = [entry.date, entry.category, entry.mode].filter(Boolean).join(' · ');
+    const subDesc = entry.desc ? ` · ${entry.desc}` : '';
+    const typeChip = entry.entryType ? ` · ${entry.entryType}` : '';
+    item.innerHTML = `
+      <span class="entry-cat-dot"></span>
+      <div class="entry-main">
+        <div class="entry-title">${formatCurrency(entry.amount)}${typeChip}</div>
+        <div class="entry-sub">${sub}${subDesc}</div>
+      </div>
+      <button class="entry-delete delete-btn" data-id="${entry.id}" type="button" aria-label="Delete">×</button>
+    `;
+    item.querySelector('.delete-btn').onclick = () => deleteEntry(entry.id);
+    groupEl.prepend(item);
   }
   
   function deleteEntry(id){
@@ -1930,7 +2229,7 @@
   
   toggleLogsBtn.addEventListener('click', () => {
     expenseLog.classList.toggle('hidden');
-    toggleLogsBtn.textContent = expenseLog.classList.contains('hidden') ? 'View Expense Logs' : 'Hide Expense Logs';
+    toggleLogsBtn.textContent = expenseLog.classList.contains('hidden') ? 'View expense logs' : 'Hide expense logs';
   });
 
   document.getElementById('expenseForm').addEventListener('submit',(e)=>{
@@ -2029,11 +2328,29 @@
   });
 
   function renderIncomeRow(entry){
-    const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
-    item.innerHTML=`<span class="delete-btn" data-id="${entry.id}">×</span>
-      <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category}
-      ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
-    item.querySelector('.delete-btn').onclick=()=>deleteIncome(entry.id); incomeLog.prepend(item);
+    let groupEl = incomeLog.querySelector('.group');
+    if (!groupEl) {
+      incomeLog.innerHTML = '<div class="section-label">Recent income</div>';
+      groupEl = document.createElement('div');
+      groupEl.className = 'group';
+      incomeLog.appendChild(groupEl);
+    }
+
+    const item = document.createElement('div');
+    item.className = 'entry-row';
+    item.dataset.id = entry.id;
+    const sub = [entry.date, entry.category].filter(Boolean).join(' · ');
+    const subDesc = entry.desc ? ` · ${entry.desc}` : '';
+    item.innerHTML = `
+      <span class="entry-cat-dot"></span>
+      <div class="entry-main">
+        <div class="entry-title">${formatCurrency(entry.amount)}</div>
+        <div class="entry-sub">${sub}${subDesc}</div>
+      </div>
+      <button class="entry-delete delete-btn" data-id="${entry.id}" type="button" aria-label="Delete">×</button>
+    `;
+    item.querySelector('.delete-btn').onclick = () => deleteIncome(entry.id);
+    groupEl.prepend(item);
   }
   function rerenderIncomeLog(){ incomeLog.innerHTML=""; incomes.forEach(renderIncomeRow); }
   function deleteIncome(id){ 
@@ -2095,7 +2412,9 @@
   document.getElementById('prev-month-btn-income').onclick=()=>{ currentDateIncome.setMonth(currentDateIncome.getMonth()-1); renderIncomeCalendar(); };
   document.getElementById('next-month-btn-income').onclick=()=>{ currentDateIncome.setMonth(currentDateIncome.getMonth()+1); renderIncomeCalendar(); };
   incomeDate.onclick=()=>calendarContainerIncome.classList.toggle('hidden');
-  calendarIconIncome.onclick=()=>calendarContainerIncome.classList.toggle('hidden');
+  if (calendarIconIncome) {
+    calendarIconIncome.onclick=()=>calendarContainerIncome.classList.toggle('hidden');
+  }
   document.addEventListener('click',(e)=>{ if(!calendarContainerIncome.contains(e.target)&&e.target!==incomeDate&&e.target!==calendarIconIncome){ calendarContainerIncome.classList.add('hidden'); }});
   renderIncomeCalendar();
 
@@ -2163,7 +2482,7 @@
 <script>
   /* ===================== NET WORTH SECTION ===================== */
   // ===== State & Elements =====
-  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabButtons = document.querySelectorAll('.tab-btn, .tab-pill');
   const panels = document.querySelectorAll('.nw-panel');
   const nwOpeningForm = document.getElementById('nwOpeningForm');
   const nwSaveBtn = document.getElementById('nwSaveBtn');
@@ -2389,6 +2708,10 @@
     if (!results) return;
 
     paRowsContainer.innerHTML = '';
+    const groupEl = document.createElement('div');
+    groupEl.className = 'group';
+    paRowsContainer.appendChild(groupEl);
+
     let netDiscrepancy = 0;
 
     results.accounts.forEach(({name, calcVal}) => {
@@ -2397,14 +2720,15 @@
       netDiscrepancy += disc;
 
       const row = document.createElement('div');
-      row.className = 'nw-row rounded-2xl p-3';
-      row.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center">
-          <div class="text-sm col-span-1"><div class="font-semibold text-[#F4E2C9]">${name}</div></div>
-          <div class="text-center col-span-1"><div class="text-base font-bold text-[#F4E2C9]">${formatCurrency(calcVal)}</div></div>
-          <div class="text-right col-span-1">
-              <input type="number" step="0.01" inputmode="decimal" class="w-full p-2 rounded-lg text-right text-xs" placeholder="Actual" value="${actualVal.toFixed(2)}" data-actual="${name}">
-          </div></div>`;
-      paRowsContainer.appendChild(row);
+      row.className = 'group-row';
+      row.innerHTML = `
+        <div class="row-label" style="width:auto; flex:1 1 auto;">
+          <div style="font-weight:600; color:var(--text-strong); font-size:0.85rem;">${name}</div>
+          <div style="font-size:0.7rem; opacity:0.7;">Calc: ${formatCurrency(calcVal)}</div>
+        </div>
+        <input type="number" step="0.01" inputmode="decimal" placeholder="Actual" value="${actualVal.toFixed(2)}" data-actual="${name}" style="max-width:110px;">
+      `;
+      groupEl.appendChild(row);
     });
 
     paTotalSpan.textContent = formatCurrency(results.total);
@@ -2432,33 +2756,34 @@
     if (!results) return;
 
     ccRowsContainer.innerHTML = '';
+    const groupEl = document.createElement('div');
+    groupEl.className = 'group';
+    ccRowsContainer.appendChild(groupEl);
 
     results.accounts.forEach(({name, calcVal}) => {
       const row = document.createElement('div');
-      row.className = 'nw-row rounded-2xl p-3';
-      
+      row.className = 'group-row';
       let actionHtml = '';
-      if(name === 'Amex Credit') {
-          actionHtml = `<button class="w-full text-xs py-1 px-2 rounded-md bg-sky-600 hover:bg-sky-500 transition" data-action="amex-pending">Pending</button>`;
+      if (name === 'Amex Credit') {
+        actionHtml = `<button type="button" data-action="amex-pending" style="padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-size:0.7rem; font-weight:600; margin-right:8px;">Pending</button>`;
       }
-
-      row.innerHTML = `<div class="grid grid-cols-3 gap-2 items-center">
-          <div class="text-sm col-span-1"><div class="font-semibold text-[#F4E2C9]">${name}</div></div>
-          <div class="text-center col-span-1">${actionHtml}</div>
-          <div class="text-right col-span-1"><div class="text-base font-bold text-[#F4E2C9]">${formatCurrency(calcVal)}</div></div>
-          </div>`;
-      ccRowsContainer.appendChild(row);
+      row.innerHTML = `
+        <div class="row-label" style="width:auto; flex:1 1 auto; font-weight:600; color:var(--text-strong); font-size:0.85rem;">${name}</div>
+        ${actionHtml}
+        <div style="font-size:0.95rem; font-weight:700; color:var(--text-strong);">${formatCurrency(calcVal)}</div>
+      `;
+      groupEl.appendChild(row);
     });
 
     ccTotalCalcSpan.textContent = formatCurrency(results.total);
 
     const amexPendingBtn = ccRowsContainer.querySelector('[data-action="amex-pending"]');
     if (amexPendingBtn) {
-        amexPendingBtn.addEventListener('click', () => {
-            const currentPending = getData('amexPendingAmount', 0);
-            amexPendingAmount.value = currentPending > 0 ? currentPending.toFixed(2) : '';
-            amexPendingDialog.classList.remove('hidden');
-        });
+      amexPendingBtn.addEventListener('click', () => {
+        const currentPending = getData('amexPendingAmount', 0);
+        amexPendingAmount.value = currentPending > 0 ? currentPending.toFixed(2) : '';
+        amexPendingDialog.classList.remove('hidden');
+      });
     }
   }
 
@@ -2496,10 +2821,26 @@
   enforce2dp(ccSettleAmount);
   function saveCcSettlements(){ dbSet('nwCcSettlements', ccSettlements); recalculateAllNetWorth(); }
   function renderCcSettlementRow(entry){
-    const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
-    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.card}`;
+    let groupEl = ccSettlementLog.querySelector('.group');
+    if (!groupEl) {
+      ccSettlementLog.innerHTML = '';
+      groupEl = document.createElement('div');
+      groupEl.className = 'group';
+      ccSettlementLog.appendChild(groupEl);
+    }
+    const item = document.createElement('div');
+    item.className = 'entry-row';
+    item.dataset.id = entry.id;
+    item.innerHTML = `
+      <span class="entry-cat-dot"></span>
+      <div class="entry-main">
+        <div class="entry-title">${formatCurrency(entry.amount)}</div>
+        <div class="entry-sub">${entry.date} · ${entry.card}</div>
+      </div>
+      <button class="entry-delete delete-btn" data-id="${entry.id}" type="button" aria-label="Delete">×</button>
+    `;
     item.querySelector('.delete-btn').onclick = () => deleteCcSettlement(entry.id);
-    ccSettlementLog.prepend(item);
+    groupEl.prepend(item);
   }
   function renderCcSettlementLog(){ ccSettlementLog.innerHTML = ""; ccSettlements.forEach(renderCcSettlementRow); }
   function deleteCcSettlement(id){
@@ -2533,10 +2874,27 @@
   enforce2dp(lcAmount);
   function saveLendCash(){ dbSet('nwLendCash', lendCash); recalculateAllNetWorth(); }
   function renderLcRow(entry){
-    const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
-    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} (via ${entry.mode || 'N/A'}) ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
+    let groupEl = lcLog.querySelector('.group');
+    if (!groupEl) {
+      lcLog.innerHTML = '';
+      groupEl = document.createElement('div');
+      groupEl.className = 'group';
+      lcLog.appendChild(groupEl);
+    }
+    const item = document.createElement('div');
+    item.className = 'entry-row';
+    item.dataset.id = entry.id;
+    const sub = [entry.date, entry.category, entry.mode || ''].filter(Boolean).join(' · ');
+    item.innerHTML = `
+      <span class="entry-cat-dot"></span>
+      <div class="entry-main">
+        <div class="entry-title">${formatCurrency(entry.amount)}</div>
+        <div class="entry-sub">${sub}${entry.desc ? ' · ' + entry.desc : ''}</div>
+      </div>
+      <button class="entry-delete delete-btn" data-id="${entry.id}" type="button" aria-label="Delete">×</button>
+    `;
     item.querySelector('.delete-btn').onclick = () => deleteLcEntry(entry.id);
-    lcLog.prepend(item);
+    groupEl.prepend(item);
   }
   function renderLcLog(){ lcLog.innerHTML = ""; lendCash.forEach(renderLcRow); }
   function deleteLcEntry(id){
@@ -2583,10 +2941,26 @@
   enforce2dp(swSettleAmount);
   function saveSwSettlements(){ dbSet('nwSplitwiseSettlements', swSettlements); recalculateAllNetWorth(); }
   function renderSwSettlementRow(entry){
-    const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
-    item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
-    item.querySelector('.delete-btn').onclick=()=>deleteSwSettlement(entry.id);
-    swSettlementLog.prepend(item);
+    let groupEl = swSettlementLog.querySelector('.group');
+    if (!groupEl) {
+      swSettlementLog.innerHTML = '';
+      groupEl = document.createElement('div');
+      groupEl.className = 'group';
+      swSettlementLog.appendChild(groupEl);
+    }
+    const item = document.createElement('div');
+    item.className = 'entry-row';
+    item.dataset.id = entry.id;
+    item.innerHTML = `
+      <span class="entry-cat-dot"></span>
+      <div class="entry-main">
+        <div class="entry-title">${formatCurrency(entry.amount)}</div>
+        <div class="entry-sub">${entry.date}${entry.desc ? ' · ' + entry.desc : ''}</div>
+      </div>
+      <button class="entry-delete delete-btn" data-id="${entry.id}" type="button" aria-label="Delete">×</button>
+    `;
+    item.querySelector('.delete-btn').onclick = () => deleteSwSettlement(entry.id);
+    groupEl.prepend(item);
   }
   function renderSwSettlementLog(){ swSettlementLog.innerHTML=''; swSettlements.forEach(renderSwSettlementRow); }
   function deleteSwSettlement(id){
