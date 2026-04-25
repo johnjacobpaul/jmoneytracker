@@ -302,7 +302,8 @@
       <option>Contingency</option>
       <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
       <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
-      <option>Investment</option><option>Lend /Cash Holdings</option>
+      <option>Investment</option><option>Lend /Cash Holdings</option><option>AMEX Receivables (Pending)</option>
+      <option>Splitwise Settled</option>
     </select>
 
     <select id="paymentMode" required class="w-full p-4 rounded-xl">
@@ -637,23 +638,27 @@
     <button id="wxNextWeek" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&gt;</button>
   </div>
 
-  <!-- Copy Button -->
-  <div class="flex justify-end mb-2">
-    <button id="wxCopyBtn" class="px-4 py-2 rounded-xl text-sm font-semibold groovy-button text-white flex items-center gap-2">
+  <!-- Copy Buttons -->
+  <div class="flex justify-end mb-2 gap-2 flex-wrap">
+    <button id="wxCopyExpensesBtn" class="px-4 py-2 rounded-xl text-sm font-semibold groovy-button text-white flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-      Copy B→H
+      Copy Expenses
+    </button>
+    <button id="wxCopySplitwiseBtn" class="px-4 py-2 rounded-xl text-sm font-semibold groovy-button text-white flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+      Copy Splitwise
     </button>
   </div>
 
   <!-- Table -->
   <div class="overflow-x-auto rounded-xl">
-    <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.72rem;">
+    <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.72rem;table-layout:fixed;">
       <thead id="wxThead"></thead>
       <tbody id="wxTbody"></tbody>
     </table>
   </div>
 
-  <p class="text-xs opacity-50 mt-3 text-center">Click Copy B→H then paste (Ctrl+V) directly into your Excel template starting from cell B3.</p>
+  <p class="text-xs opacity-50 mt-3 text-center">Copy Expenses pastes the full grid (with a blank row break before the Splitwise section). Copy Splitwise pastes only the 3 splitwise rows (B–H).</p>
 </div>
 
 
@@ -1373,7 +1378,8 @@
         logAction('add_expense', { amount: original, category, mode: `Splitwise (paid by others)` });
       }
     } else {
-      const entry={id:expenseId, date, amount:original, category, mode, desc, entryType:"Expense (Personal)", affectsTotal:"Yes"};
+      const isSettled = category === 'Splitwise Settled';
+      const entry={id:expenseId, date, amount:original, category, mode, desc, entryType: isSettled ? "Splitwise Settled" : "Expense (Personal)", affectsTotal: isSettled ? "No" : "Yes"};
       newEntries.push(entry);
       logAction('add_expense', { amount: original, category, mode });
     }
@@ -2142,9 +2148,9 @@
       {label:'Credit Interest JJP',     color:'green',  src:'income',       cat:'JJP Credit Interest'},
       {label:'Credit Interest EEM',     color:'green',  src:'income',       cat:'EEM Credit Interest'},
       {label:'JJP Wages',               color:'green',  src:'income',       cat:'JJP Wage'},
-      {label:'JJP - Tax',               color:'green',  src:'income',       cat:'JJP PAYG',            negate:true},
+      {label:'JJP - Tax',               color:'green',  src:'income',       cat:'JJP PAYG'},
       {label:'EEM Wages',               color:'green',  src:'income',       cat:'EEM Wage'},
-      {label:'EEM Tax',                 color:'green',  src:'income',       cat:'EEM PAYG',            negate:true},
+      {label:'EEM Tax',                 color:'green',  src:'income',       cat:'EEM PAYG'},
       // Yellow only
       {label:'Home Outflow JJP',        color:'yellow', src:'expense',      cat:'Home Outflow JJP'},
       {label:'Home Outflow EEM',        color:'yellow', src:'expense',      cat:'Home Outflow EEM'},
@@ -2179,10 +2185,14 @@
       {label:null,                      color:'yellow', src:'expense',      cat:'Transportation',      modeFilter:'debit'},
       // Yellow only
       {label:'Offering',                color:'yellow', src:'expense',      cat:'Offering'},
-      // Splitwise
-      {label:'Splitwise (Credit Card)', color:'grey',   src:'sw_splitwise', modeFilter:'cc',    negate:true},
-      {label:'Splitwise (Debit Card)',  color:'yellow', src:'sw_splitwise', modeFilter:'debit', negate:true},
-      {label:'Splitwise (Settled)',     color:'yellow', src:'sw_settled'},
+      {label:'Investment',              color:'yellow', src:'expense',      cat:'Investment'},
+      {label:'Lend /Cash Holdings',     color:'yellow', src:'expense',      cat:'Lend /Cash Holdings'},
+      // Grey only
+      {label:'AMEX Receivables (Pending)', color:'grey', src:'expense',     cat:'AMEX Receivables (Pending)'},
+      // Splitwise (start of splitwise section — copied separately)
+      {label:'Splitwise (Credit Card)', color:'grey',   src:'sw_splitwise', modeFilter:'cc',    negate:true, splitwise:true, breakBefore:true},
+      {label:'Splitwise (Debit Card)',  color:'yellow', src:'sw_splitwise', modeFilter:'debit', negate:true, splitwise:true},
+      {label:'Splitwise (Settled)',     color:'yellow', src:'sw_settled',                                   splitwise:true},
     ];
 
     // Colour styles
@@ -2191,8 +2201,12 @@
       yellow: 'background:#FFFFCC;color:#333;',
       grey:   'background:#D9D9D9;color:#333;',
     };
-    const LABEL_STYLE = 'background:#2F2A2D;color:#F4E2C9;font-weight:600;padding:4px 6px;text-align:center;vertical-align:middle;border:1px solid #5A5157;white-space:nowrap;font-size:0.7rem;';
-    const HEADER_STYLE = 'background:#3D363A;color:#F4E2C9;font-weight:700;padding:6px 4px;text-align:center;border:1px solid #5A5157;';
+    // Uniform cell dimensions — applied to every label, header, and day cell
+    const CELL_W = 64;       // px — day cell width
+    const LABEL_W = 130;     // px — first column (label)
+    const CELL_H = 30;       // px — uniform row height
+    const LABEL_STYLE  = `background:#2F2A2D;color:#F4E2C9;font-weight:600;padding:0 6px;text-align:center;vertical-align:middle;border:1px solid #5A5157;white-space:nowrap;font-size:0.7rem;width:${LABEL_W}px;height:${CELL_H}px;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;`;
+    const HEADER_STYLE = `background:#3D363A;color:#F4E2C9;font-weight:700;padding:0 4px;text-align:center;border:1px solid #5A5157;height:${CELL_H}px;box-sizing:border-box;`;
 
     const DAYS = ['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
 
@@ -2247,6 +2261,11 @@
         raw = getData('nwSplitwiseSettlements', [])
           .filter(e => e.date === dateStr)
           .map(e => e.amount);
+        // Also include expense entries logged with category 'Splitwise Settled'
+        const expSettled = getData('expensesData', [])
+          .filter(e => e.date === dateStr && e.category === 'Splitwise Settled')
+          .map(e => e.amount);
+        raw = raw.concat(expSettled);
       }
 
       return raw.map(v => Math.round(v * 100) / 100).filter(v => v !== 0);
@@ -2277,12 +2296,12 @@
 
       const hr1 = document.createElement('tr');
       const thCat = document.createElement('th');
-      thCat.rowSpan = 2; thCat.style.cssText = HEADER_STYLE + 'min-width:110px;';
+      thCat.rowSpan = 2; thCat.style.cssText = HEADER_STYLE + `width:${LABEL_W}px;height:${CELL_H * 2}px;`;
       thCat.textContent = 'Category';
       hr1.appendChild(thCat);
       DAYS.forEach(day => {
         const th = document.createElement('th');
-        th.style.cssText = HEADER_STYLE + 'min-width:62px;';
+        th.style.cssText = HEADER_STYLE + `width:${CELL_W}px;`;
         th.textContent = day; hr1.appendChild(th);
       });
       thead.appendChild(hr1);
@@ -2290,7 +2309,7 @@
       const hr2 = document.createElement('tr');
       dates.forEach(d => {
         const th = document.createElement('th');
-        th.style.cssText = HEADER_STYLE + 'font-weight:400;font-size:0.65rem;';
+        th.style.cssText = HEADER_STYLE + `font-weight:400;font-size:0.65rem;width:${CELL_W}px;`;
         th.textContent = d.toLocaleDateString('en-AU', {day:'numeric', month:'short'});
         hr2.appendChild(th);
       });
@@ -2301,20 +2320,34 @@
       tbody.innerHTML = '';
 
       WX_ROWS.forEach(rowDef => {
+        // Insert a visual blank-row break BEFORE the splitwise section
+        if (rowDef.breakBefore) {
+          const breakTr = document.createElement('tr');
+          breakTr.className = 'wx-break-row';
+          const breakTd = document.createElement('td');
+          breakTd.colSpan = 8;
+          breakTd.style.cssText = `height:${Math.round(CELL_H/2)}px;background:transparent;border:none;`;
+          breakTr.appendChild(breakTd);
+          tbody.appendChild(breakTr);
+        }
+
         const tr = document.createElement('tr');
-        tr.className = 'wx-data-row';
+        tr.className = rowDef.splitwise ? 'wx-data-row wx-splitwise-row' : 'wx-data-row wx-expense-row';
 
         // Label cell (skipped for null — previous rowspan covers it)
         if (rowDef.label !== null) {
           const td = document.createElement('td');
           td.style.cssText = LABEL_STYLE;
-          if (rowDef.rowspan) td.rowSpan = rowDef.rowspan;
+          if (rowDef.rowspan) {
+            td.rowSpan = rowDef.rowspan;
+            td.style.height = `${CELL_H * rowDef.rowspan}px`;
+          }
           td.textContent = rowDef.label;
           tr.appendChild(td);
         }
 
         const colorStyle = COLOR_STYLES[rowDef.color] || '';
-        const cellBase = `${colorStyle}padding:3px 4px;text-align:right;border:1px solid #ccc;`;
+        const cellBase = `${colorStyle}padding:0 4px;text-align:right;border:1px solid #ccc;width:${CELL_W}px;height:${CELL_H}px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;`;
 
         // Day cells
         isoList.forEach(iso => {
@@ -2334,18 +2367,39 @@
       });
     }
 
-    // Copy: columns B–H only (wx-day-cell), tab+newline separated, formula format
-    document.getElementById('wxCopyBtn').addEventListener('click', () => {
-      const rows = document.querySelectorAll('.wx-data-row');
-      const lines = Array.from(rows).map(row => {
+    // Helper: build TSV lines from a NodeList of rows
+    function rowsToTsv(rows) {
+      return Array.from(rows).map(row => {
         const cells = row.querySelectorAll('.wx-day-cell');
         return Array.from(cells).map(c => c.dataset.copyValue || '').join('\t');
-      });
-      navigator.clipboard.writeText(lines.join('\n')).then(() => {
-        const btn = document.getElementById('wxCopyBtn');
-        const orig = btn.innerHTML;
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => btn.innerHTML = orig, 2000);
+      }).join('\n');
+    }
+
+    function flashCopied(btn) {
+      const orig = btn.innerHTML;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => btn.innerHTML = orig, 2000);
+    }
+
+    // Copy Expenses: all rows top-to-bottom in B–H format,
+    // with a blank row break between the expenses block and the splitwise block.
+    document.getElementById('wxCopyExpensesBtn').addEventListener('click', () => {
+      const expenseRows  = document.querySelectorAll('.wx-expense-row');
+      const splitwiseRows = document.querySelectorAll('.wx-splitwise-row');
+      const blankCols    = Array(7).fill('').join('\t'); // 7 empty day cells
+      const parts = [];
+      if (expenseRows.length)   parts.push(rowsToTsv(expenseRows));
+      if (splitwiseRows.length) { parts.push(blankCols); parts.push(rowsToTsv(splitwiseRows)); }
+      navigator.clipboard.writeText(parts.join('\n')).then(() => {
+        flashCopied(document.getElementById('wxCopyExpensesBtn'));
+      }).catch(() => alert('Copy failed — please select the table manually and copy.'));
+    });
+
+    // Copy Splitwise: only the 3 splitwise rows in B–H format.
+    document.getElementById('wxCopySplitwiseBtn').addEventListener('click', () => {
+      const splitwiseRows = document.querySelectorAll('.wx-splitwise-row');
+      navigator.clipboard.writeText(rowsToTsv(splitwiseRows)).then(() => {
+        flashCopied(document.getElementById('wxCopySplitwiseBtn'));
       }).catch(() => alert('Copy failed — please select the table manually and copy.'));
     });
 
