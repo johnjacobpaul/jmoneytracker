@@ -6,6 +6,79 @@
   <title>J Money Tracker - V4.6.15</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    // ===== SUPABASE CONFIG =====
+    const SUPABASE_URL  = 'https://bzjmqbtcwcoixarfgbad.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ6am1xYnRjd2NvaXhhcmZnYmFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTU4MTEsImV4cCI6MjA5MjYzMTgxMX0.iO0gal26ZeHRZ0gjgDRU3Fm54CqP1cJ0lJwpnys2GyQ';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ===== IN-MEMORY DATA CACHE (replaces localStorage as source of truth) =====
+    const _dbCache = {};
+    let _currentUserId = null;
+
+    // Write a key to cache AND persist to Supabase (fire-and-forget)
+    function dbSet(key, value) {
+      _dbCache[key] = value;
+      if (!_currentUserId) return;
+      _supabase.from('app_data')
+        .upsert({ user_id: _currentUserId, key, value, updated_at: new Date().toISOString() })
+        .then(({ error }) => { if (error) console.error('Supabase write error:', key, error); });
+    }
+
+    // Load all keys for this user from Supabase into _dbCache
+    async function dbLoad() {
+      if (!_currentUserId) return;
+      const { data, error } = await _supabase.from('app_data').select('key,value').eq('user_id', _currentUserId);
+      if (error) { console.error('Supabase load error:', error); return; }
+      data.forEach(row => { _dbCache[row.key] = row.value; });
+    }
+
+    // Delete all data for this user from Supabase (and clear cache)
+    async function dbClear() {
+      if (!_currentUserId) return;
+      await _supabase.from('app_data').delete().eq('user_id', _currentUserId);
+      Object.keys(_dbCache).forEach(k => delete _dbCache[k]);
+    }
+
+    // One-time migration: copy existing localStorage data into Supabase
+    async function migrateFromLocalStorage() {
+      const keys = ['expensesData','incomeData','nwOpeningBalances','nwActualBalances',
+        'nwLendCash','nwSplitwiseSettlements','nwCcSettlements','salaryConfig',
+        'amexPendingAmount','actionLogs','lastTallyTimestamp','lastExpenseId'];
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try { dbSet(key, JSON.parse(raw)); } catch(e) { console.error('Migration error:', key, e); }
+        }
+      }
+      alert('✅ Migration complete! Your data is now saved to the cloud.');
+    }
+
+    // Run after data is loaded — initialises all app state from cache
+    function initAppData() {
+      // Re-sync in-memory vars from freshly loaded cache
+      if (typeof expenses !== 'undefined') expenses = getData('expensesData', []);
+      if (typeof incomes !== 'undefined')  incomes  = getData('incomeData', []);
+      if (typeof ccSettlements !== 'undefined') ccSettlements = getData('nwCcSettlements', []);
+      if (typeof lendCash !== 'undefined')      lendCash      = getData('nwLendCash', []);
+      if (typeof swSettlements !== 'undefined') swSettlements = getData('nwSplitwiseSettlements', []);
+      if (typeof salaryConfig !== 'undefined')  salaryConfig  = getData('salaryConfig', { jjp_wage: 1614.00, jjp_payg: 484.00, eem_wage: 0, eem_payg: 0 });
+
+      showSection(homeSection);
+      populateHomePageNav();
+      loadIncomes();
+      loadOpeningBalances();
+      displayLastTally();
+      updateExpenseViewForWeek(getWeekStart());
+      activateTab(document.querySelector('[data-tab="tab-assets"]'));
+      recalculateAllNetWorth();
+      renderCcSettlementLog();
+      renderLcLog();
+      renderSwSettlementLog();
+    }
+  </script>
   <style>
     body { font-family: 'Inter', sans-serif; background: var(--bg, #1C1938); color: #C3B4A8; }
     .container { max-width: 650px; }
@@ -41,7 +114,42 @@
 .unblur-toggle:hover { background:#5A5157; }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="min-h-screen" style="background:#1C1938;">
+
+<!-- ============ LOGIN PAGE ============ -->
+<div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:#1C1938;">
+  <div class="container rounded-3xl shadow-2xl p-8 groovy-card w-full max-w-sm">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">
+        J Money Tracker
+      </h1>
+      <p class="mt-2 text-sm opacity-70">Sign in to continue</p>
+    </header>
+
+    <div id="loginError" class="hidden mb-4 p-3 rounded-xl bg-red-900/40 border border-red-500/50 text-red-300 text-sm text-center"></div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="label-sm block mb-1" for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email"
+          class="w-full p-4 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
+      </div>
+      <div>
+        <label class="label-sm block mb-1" for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
+          class="w-full p-4 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
+      </div>
+      <button id="loginBtn"
+        class="w-full text-white font-semibold py-4 rounded-xl groovy-button mt-2">
+        Sign In
+      </button>
+    </div>
+    <p id="loginLoadingMsg" class="hidden text-center text-xs mt-4 opacity-60">Signing in…</p>
+  </div>
+</div>
+
+<!-- ============ MAIN APP WRAPPER ============ -->
+<div id="mainApp" class="hidden flex items-center justify-center min-h-screen p-4 w-full">
 
 <!-- Hamburger -->
 <button id="menuBtn" aria-label="Menu"
@@ -84,15 +192,7 @@
     </button>
     <button id="navAnalytics" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-        Analytics
-    </button>
-    <button id="navBudget" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-        Budget & Forecast
-    </button>
-    <button id="navTax" class="w-full text-left px-4 py-3 hover:bg-[#5A5157] flex items-center gap-3">
-        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-        Tax Summary
+        Web Excel View
     </button>
   </div>
   <div class="border-t border-[#5A5157] mt-2 pt-2">
@@ -115,6 +215,10 @@
     <button id="navClearData" class="w-full text-left px-4 py-3 text-red-400 hover:bg-red-900/50 flex items-center gap-3">
         <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
         Clear All App Data
+    </button>
+    <button id="navLogout" class="w-full text-left px-4 py-3 text-orange-400 hover:bg-orange-900/30 flex items-center gap-3">
+        <svg class="menu-item-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+        Sign Out
     </button>
   </div>
 </div>
@@ -217,8 +321,9 @@
     <button type="submit" class="w-full text-white font-semibold py-4 rounded-xl groovy-button">Add Expense</button>
   </form>
 
-  <div class="flex space-x-4 mt-4">
+  <div class="flex space-x-2 mt-4">
     <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl">Export CSV</button>
+    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl">🍩 Donut Chart</button>
     <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl">Clear Weekly</button>
   </div>
 
@@ -226,6 +331,22 @@
     <button id="toggleLogsBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">View Expense Logs</button>
   </div>
   <section id="expenseLog" class="mt-4 space-y-2 hidden"></section>
+</div>
+
+<!-- Donut Chart dialog -->
+<div id="donutChartDialog" class="dialog-overlay hidden">
+  <div class="dialog-box !max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-semibold">Weekly Expenses</h3>
+      <button id="donutChartClose" class="text-2xl leading-none text-[#C3B4A8] hover:text-white">&times;</button>
+    </div>
+    <p id="donutChartWeekLabel" class="text-xs opacity-70 mb-3 text-center"></p>
+    <div style="position:relative;height:260px;">
+      <canvas id="donutChartCanvas"></canvas>
+    </div>
+    <p id="donutChartTotal" class="text-center font-bold text-lg mt-3 text-[#F4E2C9]"></p>
+    <div id="donutChartLegend" class="mt-4 grid grid-cols-2 gap-1 text-xs"></div>
+  </div>
 </div>
 
 <!-- Splitwise dialog -->
@@ -321,7 +442,7 @@
       <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
       <p class="text-xs opacity-80">Overall Net Worth</p>
       <p class="text-5xl font-extrabold text-white" style="text-shadow: 0 0 10px rgba(195, 180, 210, 0.4), 0 0 4px rgba(195, 180, 210, 0.2);">
-        <span id="overallNetWorth" class="blurred-number">$0.00</span>
+        <span id="overallNetWorth">$0.00</span>
       </p>
     </div>
 
@@ -668,6 +789,8 @@
 
 <input type="file" id="importFileInput" class="hidden" accept=".json">
 
+</div><!-- /mainApp -->
+
 <script>
   /* ===================== GLOBAL AND NAVIGATION ===================== */
   const menuBtn = document.getElementById('menuBtn');
@@ -708,12 +831,10 @@
     activateTab(document.querySelector('[data-tab="tab-assets"]'));
   };
   document.getElementById('navInflowOutflow').onclick = () => showSection(inflowOutflowSection);
-  document.getElementById('navAnalytics').onclick = () => alert("Analytics coming soon!");
-  document.getElementById('navBudget').onclick = () => alert("Budget & Forecast coming soon!");
-  document.getElementById('navTax').onclick = () => alert("Tax Summary coming soon!");
-  document.getElementById('navClearData').onclick = () => {
+  document.getElementById('navAnalytics').onclick = () => alert("Web Excel View coming soon!");
+  document.getElementById('navClearData').onclick = async () => {
     if (confirm('⚠️ DANGER! This will permanently delete ALL data from the tracker. This cannot be undone. Are you absolutely sure?')) {
-        localStorage.clear();
+        await dbClear();
         alert('All data has been cleared.');
         location.reload();
     }
@@ -749,9 +870,8 @@
   document.getElementById('navExportData').addEventListener('click', () => {
     const backupData = {};
     DATA_KEYS_TO_BACKUP.forEach(key => {
-        const data = localStorage.getItem(key);
-        if (data !== null) { // Only backup keys that exist
-            backupData[key] = data;
+        if (key in _dbCache) {
+            backupData[key] = JSON.stringify(_dbCache[key]); // keep same format as before
         }
     });
 
@@ -779,30 +899,29 @@
 
   importFileInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
-    if (!file) {
+    if (!file) { importFileInput.value = ''; return; }
+
+    if (!confirm('⚠️ IMPORTANT!\nThis will overwrite ALL current data in the app.\nThis cannot be undone. Are you sure you want to proceed?')) {
         importFileInput.value = '';
         return;
     }
 
-    if (!confirm('⚠️ IMPORTANT!\nThis will overwrite ALL current data in the app.\nThis cannot be undone. Are you sure you want to proceed?')) {
-        importFileInput.value = ''; // Reset file input
-        return;
-    }
-
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const importedData = JSON.parse(e.target.result);
             if (typeof importedData !== 'object' || importedData === null) {
                 throw new Error("File does not contain valid JSON data.");
             }
-            localStorage.clear();
-            Object.keys(importedData).forEach(key => {
+            await dbClear();
+            for (const key of Object.keys(importedData)) {
                 if (DATA_KEYS_TO_BACKUP.includes(key)) {
-                    // The data is already a string from the backup, so we just set it.
-                    localStorage.setItem(key, importedData[key]);
+                    try {
+                        // backup stores values as JSON strings — parse them back to objects
+                        dbSet(key, JSON.parse(importedData[key]));
+                    } catch(_) { /* skip malformed keys */ }
                 }
-            });
+            }
             alert('Data imported successfully! The app will now reload.');
             location.reload();
         } catch (error) {
@@ -826,13 +945,11 @@
     el.addEventListener('blur',()=>{ const v=el.value; if(v!=='' && !isNaN(v)){ el.value=(Math.round(parseFloat(v)*100)/100).toFixed(2);} });
   }
   function getData(key, fallback = []) {
-      const item = localStorage.getItem(key);
-      try {
-        return item ? JSON.parse(item) : fallback;
-      } catch (e) {
-        console.error("Error parsing localStorage item:", key, e);
-        return fallback;
-      }
+    if (key in _dbCache) {
+      const val = _dbCache[key];
+      return (val !== null && val !== undefined) ? JSON.parse(JSON.stringify(val)) : fallback;
+    }
+    return fallback;
   }
 
   /* ===================== ACTION LOGGING ===================== */
@@ -848,7 +965,7 @@
           data
       };
       logs.unshift(newLog); // Add to the beginning
-      localStorage.setItem('actionLogs', JSON.stringify(logs.slice(0, 100))); // Keep latest 100 logs
+      dbSet('actionLogs', logs.slice(0, 100)); // Keep latest 100 logs
   }
 
   function formatLog(log) {
@@ -1052,7 +1169,7 @@
     let lastIdData = getData('lastExpenseId', { date: '', counter: 0 });
     let counter = (lastIdData.date === datePrefix) ? lastIdData.counter + 1 : 1;
     
-    localStorage.setItem('lastExpenseId', JSON.stringify({ date: datePrefix, counter: counter }));
+    dbSet('lastExpenseId', { date: datePrefix, counter: counter });
     return `${datePrefix}${String(counter).padStart(3, '0')}`;
   }
 
@@ -1187,7 +1304,7 @@
     }
   }
 
-  function saveExpenses(){ localStorage.setItem("expensesData", JSON.stringify(expenses)); recalculateAllNetWorth(); }
+  function saveExpenses(){ dbSet("expensesData", expenses); recalculateAllNetWorth(); }
   
   toggleLogsBtn.addEventListener('click', () => {
     expenseLog.classList.toggle('hidden');
@@ -1306,7 +1423,7 @@
           rerenderIncomeLog(); 
       } 
   }
-  function saveIncomes(){ localStorage.setItem("incomeData", JSON.stringify(incomes)); recalculateAllNetWorth(); }
+  function saveIncomes(){ dbSet("incomeData", incomes); recalculateAllNetWorth(); }
   function loadIncomes(){ rerenderIncomeLog(); }
   
   // Salary Config
@@ -1326,7 +1443,7 @@
       salaryConfig.jjp_payg = parseFloat(document.getElementById('conf_jjp_payg').value) || 0;
       salaryConfig.eem_wage = parseFloat(document.getElementById('conf_eem_wage').value) || 0;
       salaryConfig.eem_payg = parseFloat(document.getElementById('conf_eem_payg').value) || 0;
-      localStorage.setItem('salaryConfig', JSON.stringify(salaryConfig));
+      dbSet('salaryConfig', salaryConfig);
       alert('Salary presets saved.');
       closeSalaryConfig();
   });
@@ -1478,7 +1595,7 @@
       const raw = obFields[k].value.trim();
       payload[k] = (raw === '' || isNaN(parseFloat(raw))) ? 0 : Math.round(parseFloat(raw) * 100) / 100;
     });
-    localStorage.setItem('nwOpeningBalances', JSON.stringify(payload));
+    dbSet('nwOpeningBalances', payload);
     logAction('save_balances');
     alert('Opening balances saved.');
     recalculateAllNetWorth();
@@ -1623,7 +1740,7 @@
     link.click();
     
     logAction('record_tally');
-    localStorage.setItem('lastTallyTimestamp', JSON.stringify(currentTallyTime));
+    dbSet('lastTallyTimestamp', currentTallyTime);
     displayLastTally();
   });
 
@@ -1669,7 +1786,7 @@
     const val = parseFloat(inp.value || '0') || 0;
     const actuals = getData('nwActualBalances', {});
     actuals[name] = Math.round(val*100)/100;
-    localStorage.setItem('nwActualBalances', JSON.stringify(actuals));
+    dbSet('nwActualBalances', actuals);
     recalculateAllNetWorth();
   }
 
@@ -1715,7 +1832,7 @@
   amexPendingCancel.addEventListener('click', () => amexPendingDialog.classList.add('hidden'));
   amexPendingSave.addEventListener('click', () => {
       const amount = parseFloat(amexPendingAmount.value) || 0;
-      localStorage.setItem('amexPendingAmount', JSON.stringify(amount));
+      dbSet('amexPendingAmount', amount);
       amexPendingDialog.classList.add('hidden');
       recalculateAllNetWorth();
   });
@@ -1736,7 +1853,7 @@
   ccSettleBtn.addEventListener('click', openCcSettle);
   ccSettleCancel.addEventListener('click', closeCcSettle);
   enforce2dp(ccSettleAmount);
-  function saveCcSettlements(){ localStorage.setItem('nwCcSettlements', JSON.stringify(ccSettlements)); recalculateAllNetWorth(); }
+  function saveCcSettlements(){ dbSet('nwCcSettlements', ccSettlements); recalculateAllNetWorth(); }
   function renderCcSettlementRow(entry){
     const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.card}`;
@@ -1773,7 +1890,7 @@
   lcAddBtn.addEventListener('click', openLc);
   lcCancel.addEventListener('click', closeLc);
   enforce2dp(lcAmount);
-  function saveLendCash(){ localStorage.setItem('nwLendCash', JSON.stringify(lendCash)); recalculateAllNetWorth(); }
+  function saveLendCash(){ dbSet('nwLendCash', lendCash); recalculateAllNetWorth(); }
   function renderLcRow(entry){
     const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} (via ${entry.mode || 'N/A'}) ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
@@ -1823,7 +1940,7 @@
   swSettleBtn.addEventListener('click', openSwSettle);
   swSettleCancel.addEventListener('click', closeSwSettle);
   enforce2dp(swSettleAmount);
-  function saveSwSettlements(){ localStorage.setItem('nwSplitwiseSettlements', JSON.stringify(swSettlements)); recalculateAllNetWorth(); }
+  function saveSwSettlements(){ dbSet('nwSplitwiseSettlements', swSettlements); recalculateAllNetWorth(); }
   function renderSwSettlementRow(entry){
     const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
@@ -1860,31 +1977,12 @@
     renderSwSettlementLog();
   }
 
-  // ===== Initial Load =====
+  // ===== Initial Load (UI only — data loaded after auth in initAppData) =====
   document.addEventListener('DOMContentLoaded', () => {
-    showSection(homeSection);
-    populateHomePageNav();
-    loadIncomes();
-    loadOpeningBalances();
-    displayLastTally();
     initializeCalculator();
-    updateExpenseViewForWeek(getWeekStart());
-    
-    expenses = getData("expensesData", []);
-    incomes = getData("incomeData", []);
-    ccSettlements = getData('nwCcSettlements', []);
-    lendCash = getData('nwLendCash', []);
-    swSettlements = getData('nwSplitwiseSettlements', []);
-    salaryConfig = getData("salaryConfig", { jjp_wage: 1614.00, jjp_payg: 484.00, eem_wage: 0, eem_payg: 0 });
-
-    activateTab(document.querySelector('[data-tab="tab-assets"]'));
-    recalculateAllNetWorth();
-    renderCcSettlementLog();
-    renderLcLog();
-       renderSwSettlementLog();
   });
 
-  // === Net worth blur toggle ===
+  // ===== NET WORTH BLUR TOGGLE =====
   (function(){
     const totalEl = document.getElementById('overallNetWorth');
     const btn = document.getElementById('nwBlurToggle');
@@ -1900,11 +1998,161 @@
         btn.textContent = 'Hide';
       }
     }
-    // default: blurred
-    setBlur(true);
+    // default: not blurred
+    setBlur(false);
     btn.addEventListener('click', () => {
       const isBlurred = totalEl.classList.contains('blurred-number');
       setBlur(!isBlurred);
+    });
+  })();
+
+  // ===== DONUT CHART =====
+  (function() {
+    const DONUT_COLORS = [
+      '#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899',
+      '#14b8a6','#f97316','#8b5cf6','#84cc16','#06b6d4','#e11d48'
+    ];
+    let donutChartInstance = null;
+
+    document.getElementById('donutChartBtn').addEventListener('click', () => {
+      const weekStart = displayedWeekStart;
+      const weekEnd   = getWeekEndFrom(weekStart);
+
+      // Aggregate by category (only affectsTotal === 'Yes')
+      const map = {};
+      expenses.forEach(e => {
+        if (e.affectsTotal !== 'Yes') return;
+        const d = parseISODate(e.date);
+        if (d < weekStart || d > weekEnd) return;
+        map[e.category] = (map[e.category] || 0) + e.amount;
+      });
+
+      const labels = Object.keys(map);
+      const data   = labels.map(l => map[l]);
+      const total  = data.reduce((s, v) => s + v, 0);
+
+      // Week label
+      document.getElementById('donutChartWeekLabel').textContent =
+        'Week of ' + weekStart.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+      document.getElementById('donutChartTotal').textContent =
+        'Total: ' + formatCurrency(total);
+
+      // Legend
+      const legend = document.getElementById('donutChartLegend');
+      legend.innerHTML = labels.map((l, i) => `
+        <div class="flex items-center gap-1">
+          <span style="width:10px;height:10px;border-radius:2px;background:${DONUT_COLORS[i % DONUT_COLORS.length]};flex-shrink:0;display:inline-block;"></span>
+          <span class="truncate opacity-90">${l}</span>
+          <span class="ml-auto font-semibold text-[#F4E2C9]">${formatCurrency(map[l])}</span>
+        </div>`).join('');
+
+      // Chart
+      if (donutChartInstance) { donutChartInstance.destroy(); donutChartInstance = null; }
+      const ctx = document.getElementById('donutChartCanvas').getContext('2d');
+      donutChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data, backgroundColor: labels.map((_, i) => DONUT_COLORS[i % DONUT_COLORS.length]), borderWidth: 2, borderColor: '#3D363A' }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${formatCurrency(ctx.raw)}  (${total > 0 ? ((ctx.raw/total)*100).toFixed(1) : 0}%)`
+              }
+            }
+          }
+        }
+      });
+
+      document.getElementById('donutChartDialog').classList.remove('hidden');
+    });
+
+    document.getElementById('donutChartClose').addEventListener('click', () => {
+      document.getElementById('donutChartDialog').classList.add('hidden');
+    });
+  })();
+
+  // ===== AUTH: LOGIN + LOGOUT =====
+  (function() {
+    const loginPage  = document.getElementById('loginPage');
+    const mainApp    = document.getElementById('mainApp');
+    const loginBtn   = document.getElementById('loginBtn');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPass  = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginLoadingMsg = document.getElementById('loginLoadingMsg');
+
+    function showLogin() { mainApp.classList.add('hidden'); loginPage.classList.remove('hidden'); loginBtn.disabled = false; }
+    function showErr(msg) { loginError.textContent = msg; loginError.classList.remove('hidden'); }
+
+    async function showApp() {
+      const { data: { user } } = await _supabase.auth.getUser();
+      if (!user) return;
+      _currentUserId = user.id;
+
+      // Show loading state
+      loginLoadingMsg.textContent = 'Loading your data…';
+      loginLoadingMsg.classList.remove('hidden');
+      loginBtn.disabled = true;
+
+      await dbLoad();
+
+      // One-time migration: Supabase empty but localStorage has data
+      const hasCloud = Object.keys(_dbCache).length > 0;
+      const hasLocal = !!localStorage.getItem('expensesData');
+      if (!hasCloud && hasLocal) {
+        if (confirm('📦 Found existing data in this browser.\nMigrate it to Supabase cloud storage?\n(Do this once — your data will then sync across devices.)')) {
+          await migrateFromLocalStorage();
+          await dbLoad();
+        }
+      }
+
+      loginPage.classList.add('hidden');
+      loginLoadingMsg.classList.add('hidden');
+      mainApp.classList.remove('hidden');
+      mainApp.classList.add('flex');
+      initAppData();
+    }
+
+    // Check existing session on load
+    _supabase.auth.getSession().then(({ data }) => {
+      if (data.session) showApp();
+    });
+
+    // Auth state listener — fires on login/logout
+    _supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) { showApp(); } else { showLogin(); }
+    });
+
+    // Login button
+    loginBtn.addEventListener('click', async () => {
+      const email    = loginEmail.value.trim();
+      const password = loginPass.value;
+      if (!email || !password) { showErr('Please enter your email and password.'); return; }
+      loginBtn.disabled = true;
+      loginLoadingMsg.textContent = 'Signing in…';
+      loginLoadingMsg.classList.remove('hidden');
+      loginError.classList.add('hidden');
+      const { error } = await _supabase.auth.signInWithPassword({ email, password });
+      if (error) { showErr(error.message); loginBtn.disabled = false; loginLoadingMsg.classList.add('hidden'); }
+      // on success, onAuthStateChange fires → showApp() takes over
+    });
+
+    // Enter key on login fields
+    [loginEmail, loginPass].forEach(el => {
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
+    });
+
+    // Logout
+    document.getElementById('navLogout').addEventListener('click', async () => {
+      _currentUserId = null;
+      Object.keys(_dbCache).forEach(k => delete _dbCache[k]);
+      await _supabase.auth.signOut();
+      menuPanel.classList.add('hidden');
     });
   })();
 
