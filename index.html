@@ -111,27 +111,27 @@
       --danger:        #f87171;
     }
     [data-theme="light"] {
-      /* Light theme — warm cream/paper, charcoal text */
-      --app-bg:        #F7F1E8;
-      --surface-1:     #FFFFFF;
-      --surface-2:     #FBF5EC;
-      --surface-3:     #E2D9CC;
-      --surface-3-hov: #D2C7B7;
-      --border:        #D2C7B7;
-      --border-soft:   rgba(60,52,44,0.10);
-      --text:          #4A413A;
-      --text-strong:   #2A241F;
-      --text-muted:    rgba(74,65,58,.65);
+      /* Light theme — soft lavender background, amethyst text */
+      --app-bg:        #EDE7F6;   /* light lavender canvas */
+      --surface-1:     #FFFFFF;   /* primary card / menu / dialog */
+      --surface-2:     #F4EFFB;   /* nested card / mini-stat / nw-row */
+      --surface-3:     #D1C4E9;   /* button base / borders */
+      --surface-3-hov: #B39DDB;
+      --border:        #C5B6E0;
+      --border-soft:   rgba(106, 27, 154, 0.18);
+      --text:          #6A1B9A;   /* amethyst */
+      --text-strong:   #4A148C;   /* deeper amethyst for headings */
+      --text-muted:    rgba(106, 27, 154, 0.6);
       --input-bg:      rgba(255,255,255,.85);
-      --placeholder:   rgba(74,65,58,.45);
-      --shadow-card:   0 4px 14px rgba(74,65,58,.10);
-      --shadow-button: 0 3px 10px rgba(74,65,58,.12);
-      --shadow-hero:   0 3px 14px rgba(74,65,58,.08);
-      --hero-bg:       linear-gradient(135deg, rgba(74,65,58,0.04) 0%, rgba(120,100,80,0.02) 100%);
-      --hero-icon-bg:  linear-gradient(135deg, #E2D9CC 0%, #FBF5EC 100%);
-      --hero-icon-ring: rgba(60,52,44,0.10);
-      --bn-bg:         #FBF5EC;
-      --bn-active:     #E2D9CC;
+      --placeholder:   rgba(106, 27, 154, 0.45);
+      --shadow-card:   0 4px 14px rgba(74, 20, 140, 0.10);
+      --shadow-button: 0 3px 10px rgba(74, 20, 140, 0.14);
+      --shadow-hero:   0 3px 14px rgba(74, 20, 140, 0.10);
+      --hero-bg:       linear-gradient(135deg, rgba(149, 117, 205, 0.12) 0%, rgba(179, 157, 219, 0.06) 100%);
+      --hero-icon-bg:  linear-gradient(135deg, #B39DDB 0%, #D1C4E9 100%);
+      --hero-icon-ring: rgba(74, 20, 140, 0.18);
+      --bn-bg:         #F4EFFB;
+      --bn-active:     #D1C4E9;
       --pos-color:     #B91C1C;
       --neg-color:     #15803D;
       --danger:        #b91c1c;
@@ -160,6 +160,8 @@
     @media (min-width: 768px) {
       .section-page { padding: 24px 24px 32px; }
     }
+    /* Net Worth dedicated-view: nw-panels inherit section-page edges (no extra inset) */
+    #netWorthSection.dedicated-view .nw-panel { padding: 0; }
 
     /* Inputs */
     input, select, textarea {
@@ -224,38 +226,33 @@
     .panel-hero {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 16px 18px;
-      margin-bottom: 18px;
-      border-radius: 16px;
+      gap: 12px;
+      padding: 10px 14px;
+      margin: 0 0 16px 0;
+      border-radius: 14px;
       background: var(--hero-bg);
       border: 1px solid var(--border-soft);
       box-shadow: var(--shadow-hero);
     }
     .panel-hero .panel-hero-icon {
       flex: 0 0 auto;
-      width: 44px; height: 44px;
-      border-radius: 12px;
+      width: 36px; height: 36px;
+      border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       background: var(--hero-icon-bg);
       color: var(--text-strong);
       box-shadow: inset 0 0 0 1px var(--hero-icon-ring);
     }
-    .panel-hero .panel-hero-icon svg { width: 24px; height: 24px; }
+    .panel-hero .panel-hero-icon svg { width: 20px; height: 20px; }
+    .panel-hero .panel-hero-text { flex: 1 1 auto; min-width: 0; }
     .panel-hero .panel-hero-text h1,
     .panel-hero .panel-hero-text h2 {
-      font-size: 1.4rem;
-      font-weight: 800;
+      font-size: 1.15rem;
+      font-weight: 700;
       color: var(--text-strong);
-      letter-spacing: 0.02em;
-      line-height: 1.1;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
       margin: 0;
-    }
-    .panel-hero .panel-hero-text p {
-      margin: 3px 0 0 0;
-      font-size: 0.78rem;
-      opacity: 0.75;
-      color: var(--text);
     }
 
     /* === Bottom navigation bar (mobile only) === */
@@ -331,9 +328,9 @@
     [data-theme="light"] .hover\:bg-slate-700:hover { background-color: var(--surface-3) !important; }
     [data-theme="light"] .bg-slate-600 { background-color: var(--surface-3) !important; color: var(--text-strong); }
     [data-theme="light"] .bg-slate-600.hover\:bg-slate-700:hover { background-color: var(--surface-3-hov) !important; }
-    /* Gradient title — make it readable on cream */
+    /* Gradient title — amethyst tones on lavender */
     [data-theme="light"] .from-slate-300.to-slate-500 {
-      background: linear-gradient(to right, #6B5D52, #2A241F) !important;
+      background: linear-gradient(to right, #7B1FA2, #4A148C) !important;
       -webkit-background-clip: text;
       background-clip: text;
     }
@@ -513,7 +510,6 @@
     </div>
     <div class="panel-hero-text">
       <h1>Log an Expense</h1>
-      <p>Add expenses for the week below</p>
     </div>
   </div>
 
@@ -525,20 +521,20 @@
     </div>
   </section>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <section class="p-6 rounded-3xl text-center groovy-card">
-        <h2 class="text-lg font-bold text-white">Total Expenses This Week:</h2>
-        <p class="text-5xl font-extrabold text-white mt-2"><span id="totalAmount">$0.00</span></p>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
+    <section class="p-4 rounded-2xl text-center groovy-card">
+        <h2 class="text-sm font-semibold text-white">Total Expenses This Week</h2>
+        <p class="text-2xl font-extrabold text-white mt-1"><span id="totalAmount">$0.00</span></p>
     </section>
-    <section class="p-4 rounded-3xl groovy-card text-xs">
-        <h3 class="font-bold text-white mb-2 text-center">Weekly Breakdown</h3>
+    <section class="p-3 rounded-2xl groovy-card text-xs">
+        <h3 class="text-sm font-semibold text-white mb-1 text-center">Weekly Breakdown</h3>
         <div id="weeklyBreakdown" class="space-y-1"></div>
     </section>
   </div>
 
-  <form id="expenseForm" class="space-y-4">
+  <form id="expenseForm" class="space-y-3">
     <div class="relative">
-      <label for="expenseDate" class="block text-sm font-medium mb-1">Date</label>
+      <label for="expenseDate" class="block text-xs font-medium mb-1">Date</label>
       <div class="relative">
         <input type="text" id="expenseDate" placeholder="Select Date" required readonly class="w-full p-3 rounded-xl cursor-pointer">
         <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -594,9 +590,9 @@
   </form>
 
   <div class="flex space-x-2 mt-4">
-    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl">Export CSV</button>
-    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl">🍩 Donut Chart</button>
-    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl">Clear Weekly</button>
+    <button id="exportCsvBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg text-sm">Export CSV</button>
+    <button id="donutChartBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg text-sm">🍩 Donut Chart</button>
+    <button id="clearBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg text-sm">Clear Weekly</button>
   </div>
 
   <div class="text-center mt-6">
@@ -643,7 +639,6 @@
     </div>
     <div class="panel-hero-text">
       <h1>Log Income</h1>
-      <p>Salary, interest and one-off receipts</p>
     </div>
   </div>
 
@@ -713,17 +708,16 @@
 
 <!-- ============ NET WORTH ============ -->
 <div id="netWorthSection" class="section-page hidden">
-  <header class="mb-4">
-    <div class="panel-hero">
-      <div class="panel-hero-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-      </div>
-      <div class="panel-hero-text">
-        <h1>Report Closing Balance</h1>
-        <p>Primary assets — calculated vs reported</p>
-      </div>
+  <div class="panel-hero">
+    <div class="panel-hero-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
     </div>
+    <div class="panel-hero-text">
+      <h1>Report Closing Balance</h1>
+    </div>
+  </div>
 
+  <header class="mb-4">
     <div class="mt-4 text-center p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-lg relative">
       <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
       <p class="text-xs opacity-80">Overall Net Worth</p>
@@ -780,7 +774,6 @@
       </div>
       <div class="panel-hero-text">
         <h2>Lend / Cash Holdings</h2>
-        <p>Track money lent out and physical cash on hand</p>
       </div>
     </div>
 
@@ -823,7 +816,6 @@
       </div>
       <div class="panel-hero-text">
         <h2>Splitwise</h2>
-        <p>Outstanding balances and settlement history</p>
       </div>
     </div>
 
@@ -855,7 +847,6 @@
       </div>
       <div class="panel-hero-text">
         <h2>Liabilities</h2>
-        <p>Credit-card balances — calculated vs reported</p>
       </div>
     </div>
 
@@ -894,7 +885,6 @@
       </div>
       <div class="panel-hero-text">
         <h1>Configure Opening Balances</h1>
-        <p>Values save to your device — positive/negative as appropriate</p>
       </div>
     </div>
 
@@ -933,7 +923,6 @@
     </div>
     <div class="panel-hero-text">
       <h1>Inflow / Outflow</h1>
-      <p>Coming soon — under development</p>
     </div>
   </div>
 </div>
@@ -946,7 +935,6 @@
     </div>
     <div class="panel-hero-text">
       <h1>Web Excel View</h1>
-      <p>Weekly grid — copy straight to your Excel template</p>
     </div>
   </div>
 
