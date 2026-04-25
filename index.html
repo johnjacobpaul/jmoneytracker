@@ -80,93 +80,193 @@
     }
   </script>
   <style>
-    body { font-family: 'Inter', sans-serif; background: var(--bg, #1C1938); color: #C3B4A8; }
+    /* ===========================================================
+       THEME TOKENS — every color in the app reads from these vars,
+       so flipping data-theme="light" on <html> recolors everything.
+       =========================================================== */
+    :root {
+      /* Dark theme (default) */
+      --app-bg:        #1C1938;
+      --surface-1:     #3D363A;   /* primary card */
+      --surface-2:     #2F2A2D;   /* nested card / mini-stat / nw-row */
+      --surface-3:     #5A5157;   /* button base / borders */
+      --surface-3-hov: #72656E;
+      --border:        #5A5157;
+      --border-soft:   rgba(244,226,201,0.12);
+      --text:          #C3B4A8;
+      --text-strong:   #F4E2C9;
+      --text-muted:    rgba(244,226,201,.6);
+      --input-bg:      rgba(255,255,255,.05);
+      --placeholder:   rgba(244,226,201,.5);
+      --shadow-card:   0 5px 15px rgba(0,0,0,.4);
+      --shadow-button: 0 4px 15px rgba(0,0,0,.4);
+      --shadow-hero:   0 4px 18px rgba(0,0,0,0.18);
+      --hero-bg:       linear-gradient(135deg, rgba(244,226,201,0.06) 0%, rgba(195,180,168,0.02) 100%);
+      --hero-icon-bg:  linear-gradient(135deg, #5A5157 0%, #3D363A 100%);
+      --hero-icon-ring: rgba(244,226,201,0.15);
+      --bn-bg:         #2F2A2D;
+      --bn-active:     #5A5157;
+      --pos-color:     #FCA5A5;
+      --neg-color:     #86EFAC;
+      --danger:        #f87171;
+    }
+    [data-theme="light"] {
+      /* Light theme — warm cream/paper, charcoal text */
+      --app-bg:        #F7F1E8;
+      --surface-1:     #FFFFFF;
+      --surface-2:     #FBF5EC;
+      --surface-3:     #E2D9CC;
+      --surface-3-hov: #D2C7B7;
+      --border:        #D2C7B7;
+      --border-soft:   rgba(60,52,44,0.10);
+      --text:          #4A413A;
+      --text-strong:   #2A241F;
+      --text-muted:    rgba(74,65,58,.65);
+      --input-bg:      rgba(255,255,255,.85);
+      --placeholder:   rgba(74,65,58,.45);
+      --shadow-card:   0 4px 14px rgba(74,65,58,.10);
+      --shadow-button: 0 3px 10px rgba(74,65,58,.12);
+      --shadow-hero:   0 3px 14px rgba(74,65,58,.08);
+      --hero-bg:       linear-gradient(135deg, rgba(74,65,58,0.04) 0%, rgba(120,100,80,0.02) 100%);
+      --hero-icon-bg:  linear-gradient(135deg, #E2D9CC 0%, #FBF5EC 100%);
+      --hero-icon-ring: rgba(60,52,44,0.10);
+      --bn-bg:         #FBF5EC;
+      --bn-active:     #E2D9CC;
+      --pos-color:     #B91C1C;
+      --neg-color:     #15803D;
+      --danger:        #b91c1c;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--app-bg); color: var(--text); transition: background .25s ease, color .25s ease; }
     html { overflow-x: hidden; }
     #webExcelSection .overflow-x-auto { -webkit-overflow-scrolling: touch; max-width: 100vw; }
     .container { max-width: 650px; }
-    .groovy-card { background: #3D363A; box-shadow: 0 5px 15px rgba(0,0,0,.4); backdrop-filter: blur(10px); border: 1px solid #5A5157; }
-    input, select { background-color: rgba(255,255,255,.05); border: 1px solid #5A5157; color: #F4E2C9; }
-    input::placeholder { color: rgba(244,226,201,.5); }
-    .groovy-button { background: #5A5157; transition: .3s; box-shadow: 0 4px 15px rgba(0,0,0,.4); }
-    .groovy-button:hover { background: #72656E; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.6); }
-    .groovy-button:disabled { background: #4a4447; cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
-    .log-item { background: rgba(255,255,255,.05); border: 1px solid #5A5157; padding: 10px; border-radius: 10px; position: relative; }
-    .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: #f87171; font-weight: bold; }
-    .neg { color: #86EFAC; } .pos { color: #FCA5A5; }
-    .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; justify-content: center; align-items: center; z-index: 50; }
-    .dialog-box { background: #3D363A; border: 1px solid #5A5157; color: #F4E2C9; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: left; }
-    h1, h2 { color: #F4E2C9; }
+
+    /* Card surfaces */
+    .groovy-card { background: var(--surface-1); box-shadow: var(--shadow-card); border: 1px solid var(--border); }
+    .mini-stat { background: var(--surface-2); border: 1px solid var(--border); }
+    .nw-row    { background: var(--surface-2); border: 1px solid var(--border); }
+    .nw-col-h  { color: var(--text-strong); font-weight: 600; }
+
+    /* Section page — non-home sections (no bulky outer card, just generous spacing) */
+    .section-page {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 16px 16px 20px;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    @media (min-width: 768px) {
+      .section-page { padding: 24px 24px 32px; }
+    }
+
+    /* Inputs */
+    input, select, textarea {
+      background-color: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+    }
+    input::placeholder, textarea::placeholder { color: var(--placeholder); }
+
+    /* Buttons */
+    .groovy-button { background: var(--surface-3); color: #fff; transition: .25s; box-shadow: var(--shadow-button); }
+    .groovy-button:hover { background: var(--surface-3-hov); transform: translateY(-1px); }
+    .groovy-button:disabled { background: var(--surface-3); cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
+    [data-theme="light"] .groovy-button { color: var(--text-strong); }
+
+    /* Compact button helper — used on log/income/etc forms */
+    .btn-compact { padding: 0.625rem 0.875rem !important; font-size: 0.875rem !important; border-radius: 0.625rem !important; }
+
+    /* Misc */
+    .log-item { background: var(--input-bg); border: 1px solid var(--border); padding: 10px; border-radius: 10px; position: relative; color: var(--text); }
+    .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: var(--danger); font-weight: bold; }
+    .neg { color: var(--neg-color); } .pos { color: var(--pos-color); }
+    .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; justify-content: center; align-items: center; z-index: 50; }
+    .dialog-box { background: var(--surface-1); border: 1px solid var(--border); color: var(--text-strong); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: left; }
+    h1, h2, h3 { color: var(--text-strong); }
     .tab-btn { border-bottom: 2px solid transparent; }
-    .tab-btn.active { border-color: #F4E2C9; color: #F4E2C9; }
+    .tab-btn.active { border-color: var(--text-strong); color: var(--text-strong); }
     .label-sm { font-size: .825rem; opacity: .9; }
-    .mini-stat { background:#2F2A2D; border:1px solid #5A5157; }
-    .nw-row { background:#2F2A2D; border:1px solid #5A5157; }
-    .nw-col-h { color:#F4E2C9; font-weight:600; }
-    .menu-item-icon { width: 1.25rem; height: 1.25rem; opacity: 0.8; }
-    .calc-btn { background-color: #5A5157; color: #F4E2C9; font-weight: bold; padding: 0.75rem; border-radius: 0.5rem; transition: .2s; font-size: 1.1rem; }
-    .calc-btn:hover { background-color: #72656E; }
-    .calc-btn:hover { background-color: #72656E; }
-/* Blur helpers */
-.blurred-number { filter: blur(10px); }
-.unblur-toggle {
-  position: absolute; right: .5rem; top: .5rem;
-  font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem;
-  border: 1px solid #5A5157; background: #3D363A; color: #F4E2C9;
-}
-.unblur-toggle:hover { background:#5A5157; }
+    .menu-item-icon { width: 1.25rem; height: 1.25rem; opacity: 0.85; }
+    .calc-btn { background-color: var(--surface-3); color: var(--text-strong); font-weight: bold; padding: 0.75rem; border-radius: 0.5rem; transition: .2s; font-size: 1.1rem; }
+    .calc-btn:hover { background-color: var(--surface-3-hov); }
+
+    /* Blur helpers */
+    .blurred-number { filter: blur(10px); }
+    .unblur-toggle {
+      position: absolute; right: .5rem; top: .5rem;
+      font-size: .75rem; padding: .25rem .5rem; border-radius: .5rem;
+      border: 1px solid var(--border); background: var(--surface-1); color: var(--text-strong);
+    }
+    .unblur-toggle:hover { background: var(--surface-3); }
+
+    /* Theme toggle button (top bar, next to hamburger) */
+    #themeToggle {
+      position: fixed; top: 1rem; right: 4.5rem; z-index: 50;
+      width: 2.5rem; height: 2.5rem;
+      border-radius: 9999px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-button);
+      transition: background .2s;
+    }
+    #themeToggle:hover { background: var(--surface-3); }
+    #themeToggle svg { width: 1.1rem; height: 1.1rem; }
+
     /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
-    /* When this class is present on netWorthSection, the section's main
-       header and the tab-bar are hidden, making each tab a standalone page. */
     #netWorthSection.dedicated-view > header { display: none !important; }
     #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
 
-    /* === Aesthetic page-hero header for dedicated panels === */
+    /* === Page-hero — used on EVERY non-home section as a consistent title === */
     .panel-hero {
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 18px 20px;
+      padding: 16px 18px;
       margin-bottom: 18px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(244,226,201,0.06) 0%, rgba(195,180,168,0.02) 100%);
-      border: 1px solid rgba(244,226,201,0.12);
-      box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+      border-radius: 16px;
+      background: var(--hero-bg);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-hero);
     }
     .panel-hero .panel-hero-icon {
       flex: 0 0 auto;
-      width: 48px; height: 48px;
-      border-radius: 14px;
+      width: 44px; height: 44px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #5A5157 0%, #3D363A 100%);
-      color: #F4E2C9;
-      box-shadow: inset 0 0 0 1px rgba(244,226,201,0.15);
+      background: var(--hero-icon-bg);
+      color: var(--text-strong);
+      box-shadow: inset 0 0 0 1px var(--hero-icon-ring);
     }
-    .panel-hero .panel-hero-icon svg { width: 26px; height: 26px; }
+    .panel-hero .panel-hero-icon svg { width: 24px; height: 24px; }
+    .panel-hero .panel-hero-text h1,
     .panel-hero .panel-hero-text h2 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: #F4E2C9;
+      color: var(--text-strong);
       letter-spacing: 0.02em;
       line-height: 1.1;
       margin: 0;
     }
     .panel-hero .panel-hero-text p {
-      margin: 4px 0 0 0;
-      font-size: 0.8rem;
-      opacity: 0.7;
-      color: #C3B4A8;
+      margin: 3px 0 0 0;
+      font-size: 0.78rem;
+      opacity: 0.75;
+      color: var(--text);
     }
 
     /* === Bottom navigation bar (mobile only) === */
-    /* Hidden on desktop — the hamburger covers everything there. */
     #bottomNav { display: none; }
     @media (max-width: 768px) {
       #bottomNav {
         display: flex;
         position: fixed;
         bottom: 0; left: 0; right: 0;
-        background: #2F2A2D;
-        border-top: 1px solid #5A5157;
+        background: var(--bn-bg);
+        border-top: 1px solid var(--border);
         z-index: 60;
         padding: 6px 4px env(safe-area-inset-bottom) 4px;
         gap: 0;
@@ -177,7 +277,7 @@
         padding: 6px 2px;
         border-radius: 8px;
         background: transparent;
-        color: #C3B4A8;
+        color: var(--text);
         font-size: 0.6rem;
         font-weight: 600;
         display: flex;
@@ -187,8 +287,8 @@
         transition: background 120ms;
         overflow: hidden;
       }
-      .bn-btn:hover, .bn-btn:active { background: #3D363A; }
-      .bn-btn.active { background: #5A5157; color: #F4E2C9; }
+      .bn-btn:hover, .bn-btn:active { background: var(--surface-2); }
+      .bn-btn.active { background: var(--bn-active); color: var(--text-strong); }
       .bn-btn svg { width: 20px; height: 20px; }
       .bn-btn span {
         white-space: nowrap;
@@ -196,7 +296,6 @@
         text-overflow: ellipsis;
         max-width: 100%;
       }
-      /* Reserve space at bottom of every section so nothing is hidden by bottom nav */
       body { padding-bottom: 84px; }
     }
 
@@ -212,12 +311,54 @@
       border-color: transparent #c0392b transparent transparent;
       pointer-events: none;
     }
+
+    /* Hamburger menu surface */
+    #menuPanel {
+      background: var(--surface-1) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+    }
+    #menuPanel button:hover { background: var(--surface-3) !important; }
+
+    /* Top icons in light theme should not stay cream */
+    [data-theme="light"] #menuBtn span { background: var(--text-strong) !important; }
+
+    /* Light-theme color rescues for hard-coded Tailwind slate utilities used in calendars,
+       splitwise review, dialog cancel, gradient titles, and Net Worth snapshot. */
+    [data-theme="light"] .bg-slate-800,
+    [data-theme="light"] .bg-slate-700 { background-color: var(--surface-2) !important; color: var(--text); }
+    [data-theme="light"] .border-slate-700 { border-color: var(--border) !important; }
+    [data-theme="light"] .hover\:bg-slate-700:hover { background-color: var(--surface-3) !important; }
+    [data-theme="light"] .bg-slate-600 { background-color: var(--surface-3) !important; color: var(--text-strong); }
+    [data-theme="light"] .bg-slate-600.hover\:bg-slate-700:hover { background-color: var(--surface-3-hov) !important; }
+    /* Gradient title — make it readable on cream */
+    [data-theme="light"] .from-slate-300.to-slate-500 {
+      background: linear-gradient(to right, #6B5D52, #2A241F) !important;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    /* Net Worth snapshot block — was a dark gradient, soften for light theme */
+    [data-theme="light"] #netWorthSection header > div.from-slate-800\/50 { background: var(--surface-2) !important; }
+    [data-theme="light"] [class*="from-slate-800/50"] { background: var(--surface-2) !important; }
+    [data-theme="light"] [class*="from-slate-800/50"] .text-white { color: var(--text-strong) !important; text-shadow: none !important; }
+
+    /* In light theme, text-white inside groovy-cards / groovy-buttons becomes white-on-white. */
+    [data-theme="light"] .groovy-card .text-white,
+    [data-theme="light"] .groovy-card.text-white { color: var(--text-strong) !important; }
+    [data-theme="light"] .groovy-button.text-white { color: var(--text-strong) !important; }
+    [data-theme="light"] .text-gray-400 { color: var(--text-muted) !important; }
   </style>
 </head>
-<body class="min-h-screen" style="background:#1C1938; overflow-x:hidden;">
+<body class="min-h-screen" style="overflow-x:hidden;">
+
+<!-- Theme toggle (sun/moon) — sits next to hamburger -->
+<button id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle light/dark theme">
+  <svg id="themeIconMoon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  <svg id="themeIconSun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hidden"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.5-6.5l-.7.7M6.2 17.8l-.7.7m13-.7l.7.7M6.2 6.2l-.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+</button>
 
 <!-- ============ LOGIN PAGE ============ -->
-<div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:#1C1938;">
+<div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:var(--app-bg);">
   <div class="container rounded-3xl shadow-2xl p-8 groovy-card w-full max-w-sm">
     <header class="text-center mb-8">
       <h1 class="text-4xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">
@@ -232,15 +373,15 @@
       <div>
         <label class="label-sm block mb-1" for="loginEmail">Email</label>
         <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email"
-          class="w-full p-4 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
+          class="w-full p-3 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
       </div>
       <div>
         <label class="label-sm block mb-1" for="loginPassword">Password</label>
         <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"
-          class="w-full p-4 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
+          class="w-full p-3 rounded-xl" style="background:rgba(255,255,255,.05);border:1px solid #5A5157;color:#F4E2C9;">
       </div>
       <button id="loginBtn"
-        class="w-full text-white font-semibold py-4 rounded-xl groovy-button mt-2">
+        class="w-full text-white font-semibold py-3 rounded-xl groovy-button mt-2">
         Sign In
       </button>
     </div>
@@ -365,12 +506,16 @@
 
 
 <!-- ============ EXPENSES ============ -->
-<div id="expenseSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
-  <header class="text-center mb-6">
-    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
-    <h1 class="text-4xl font-black tracking-wide">Log an Expense</h1>
-    <p class="mt-2">Add your expenses for the week.</p>
-  </header>
+<div id="expenseSection" class="section-page hidden">
+  <div class="panel-hero">
+    <div class="panel-hero-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
+    <div class="panel-hero-text">
+      <h1>Log an Expense</h1>
+      <p>Add expenses for the week below</p>
+    </div>
+  </div>
 
   <section class="mb-6 text-center">
     <div class="flex items-center justify-center gap-4">
@@ -395,7 +540,7 @@
     <div class="relative">
       <label for="expenseDate" class="block text-sm font-medium mb-1">Date</label>
       <div class="relative">
-        <input type="text" id="expenseDate" placeholder="Select Date" required readonly class="w-full p-4 rounded-xl cursor-pointer">
+        <input type="text" id="expenseDate" placeholder="Select Date" required readonly class="w-full p-3 rounded-xl cursor-pointer">
         <svg id="calendar-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -413,14 +558,14 @@
       </div>
     </div>
 
-    <input type="number" id="expenseAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+    <input type="number" id="expenseAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
     
     <div class="flex items-center space-x-2">
       <input type="checkbox" id="splitwiseCheckbox" class="h-4 w-4">
       <label for="splitwiseCheckbox">Make this a Splitwise purchase?</label>
     </div>
 
-    <select id="expenseCategory" required class="w-full p-4 rounded-xl">
+    <select id="expenseCategory" required class="w-full p-3 rounded-xl">
       <option value="" disabled selected>Select Category</option>
       <option>Rent</option><option>Health Insurance</option><option>Digital Subscription</option><option>Gym</option>
       <option>Bills</option><option>Fuel</option><option>Car Related</option>
@@ -430,13 +575,13 @@
       <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
     </select>
 
-    <select id="paymentMode" required class="w-full p-4 rounded-xl">
+    <select id="paymentMode" required class="w-full p-3 rounded-xl">
       <option value="" disabled selected>Select Payment Mode</option>
       <option>Amex Credit</option><option>Velocity Credit</option><option>JJP CBA Debit</option>
       <option>Westpac Debit</option><option>JJP ING Debit</option><option>EEM ING Debit</option>
     </select>
 
-    <input type="text" id="expenseDescription" placeholder="Description (Optional)" class="w-full p-4 rounded-xl">
+    <input type="text" id="expenseDescription" placeholder="Description (Optional)" class="w-full p-3 rounded-xl">
 
     <div id="splitwiseReview" class="hidden p-4 rounded-xl bg-slate-700">
       <p class="text-sm font-bold">Splitwise Breakdown</p>
@@ -445,7 +590,7 @@
       <p class="text-xs italic" id="reviewDesc"></p>
     </div>
 
-    <button type="submit" class="w-full text-white font-semibold py-4 rounded-xl groovy-button">Add Expense</button>
+    <button type="submit" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Add Expense</button>
   </form>
 
   <div class="flex space-x-2 mt-4">
@@ -491,20 +636,24 @@
 </div>
 
 <!-- ============ INCOME ============ -->
-<div id="incomeSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
-  <header class="text-center mb-6">
-    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
-    <h1 class="text-3xl font-black tracking-wide">Log Income</h1>
-    <p class="mt-2">Add your income items.</p>
-  </header>
+<div id="incomeSection" class="section-page hidden">
+  <div class="panel-hero">
+    <div class="panel-hero-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m0 0a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 9M3 9V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75V9"/></svg>
+    </div>
+    <div class="panel-hero-text">
+      <h1>Log Income</h1>
+      <p>Salary, interest and one-off receipts</p>
+    </div>
+  </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record JJP Salary</button>
-    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record EEM Salary</button>
+    <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record JJP Salary</button>
+    <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">Record EEM Salary</button>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-    <button id="btnQuickJJPInterest" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">💰 Credit Interest JJP</button>
-    <button id="btnQuickEEMInterest" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">💰 Credit Interest EEM</button>
+    <button id="btnQuickJJPInterest" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">💰 Credit Interest JJP</button>
+    <button id="btnQuickEEMInterest" class="w-full text-white font-semibold py-2.5 rounded-xl groovy-button text-sm">💰 Credit Interest EEM</button>
   </div>
   <div class="text-center mb-4">
     <button id="configureSalariesBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">Configure Salaries</button>
@@ -515,7 +664,7 @@
     <div class="relative">
       <label for="incomeDate" class="block text-sm font-medium mb-1">Date</label>
       <div class="relative">
-        <input type="text" id="incomeDate" placeholder="Select Date" required readonly class="w-full p-4 rounded-xl cursor-pointer">
+        <input type="text" id="incomeDate" placeholder="Select Date" required readonly class="w-full p-3 rounded-xl cursor-pointer">
         <svg id="calendar-icon-income" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
@@ -535,17 +684,17 @@
 
     <div>
       <label for="incomeAmount" class="block text-sm font-medium mb-1">Amount</label>
-      <input type="number" id="incomeAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+      <input type="number" id="incomeAmount" placeholder="Amount" required step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
     </div>
 
     <div>
       <label for="incomePAYG" class="block text-sm font-medium mb-1">PAYG (Tax withheld)</label>
-      <input type="number" id="incomePAYG" placeholder="PAYG" step="0.01" inputmode="decimal" class="w-full p-4 rounded-xl">
+      <input type="number" id="incomePAYG" placeholder="PAYG" step="0.01" inputmode="decimal" class="w-full p-3 rounded-xl">
     </div>
 
     <div>
       <label for="incomeCategory" class="block text-sm font-medium mb-1">Category (Affects Account)</label>
-      <select id="incomeCategory" required class="w-full p-4 rounded-xl">
+      <select id="incomeCategory" required class="w-full p-3 rounded-xl">
         <option value="" disabled selected>Select Category</option>
         <option>JJP Wage</option><option>EEM Wage</option><option>Tax Return</option>
         <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>Cashback/Rewards</option><option>JJP PAYG</option>
@@ -554,21 +703,27 @@
 
     <div>
       <label for="incomeDescription" class="block text-sm font-medium mb-1">Description (Optional)</label>
-      <input type="text" id="incomeDescription" placeholder="Description" class="w-full p-4 rounded-xl">
+      <input type="text" id="incomeDescription" placeholder="Description" class="w-full p-3 rounded-xl">
     </div>
 
-    <button type="submit" class="w-full text-white font-semibold py-4 rounded-xl groovy-button">Add Income</button>
+    <button type="submit" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Add Income</button>
   </form>
   <section class="mt-8 space-y-2" id="incomeLog"></section>
 </div>
 
 <!-- ============ NET WORTH ============ -->
-<div id="netWorthSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
-  <header class="text-center mb-6">
-    <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
-    <h1 class="text-3xl font-black tracking-wide">Net Worth</h1>
-     <p class="text-sm opacity-80 mt-1">Overall Snapshot</p>
-    
+<div id="netWorthSection" class="section-page hidden">
+  <header class="mb-4">
+    <div class="panel-hero">
+      <div class="panel-hero-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      </div>
+      <div class="panel-hero-text">
+        <h1>Report Closing Balance</h1>
+        <p>Primary assets — calculated vs reported</p>
+      </div>
+    </div>
+
     <div class="mt-4 text-center p-4 rounded-xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 shadow-lg relative">
       <button id="nwBlurToggle" class="unblur-toggle" type="button" aria-pressed="true" title="Show/Hide">Show</button>
       <p class="text-xs opacity-80">Overall Net Worth</p>
@@ -732,12 +887,16 @@
 </div>
 
 <!-- ============ CONFIGURE BALANCES ============ -->
-<div id="configureSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden">
-    <header class="text-center mb-6">
-        <div class="mb-4 text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
-        <h1 class="text-3xl font-black tracking-wide">Configure Opening Balances</h1>
-        <p class="text-xs opacity-80 mt-2">Values are saved to your device. Use positive/negative as appropriate.</p>
-    </header>
+<div id="configureSection" class="section-page hidden">
+    <div class="panel-hero">
+      <div class="panel-hero-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div class="panel-hero-text">
+        <h1>Configure Opening Balances</h1>
+        <p>Values save to your device — positive/negative as appropriate</p>
+      </div>
+    </div>
 
     <form id="nwOpeningForm" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
       <div><label class="label-sm" for="ob_jjp_cba">JJP CBA Debit</label>
@@ -767,18 +926,29 @@
 </div>
 
 <!-- ============ INFLOW OUTFLOW ============ -->
-<div id="inflowOutflowSection" class="container rounded-3xl shadow-2xl p-6 md:p-8 groovy-card hidden text-center">
-  <h1 class="text-3xl font-black tracking-wide">Inflow / Outflow</h1>
-  <p class="mt-4 text-2xl font-bold">Coming Soon</p>
-  <p class="mt-2 opacity-80">This feature is under development.</p>
+<div id="inflowOutflowSection" class="section-page hidden">
+  <div class="panel-hero">
+    <div class="panel-hero-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-1.5L21 9m0 0L16.5 4.5M21 9H3"/></svg>
+    </div>
+    <div class="panel-hero-text">
+      <h1>Inflow / Outflow</h1>
+      <p>Coming soon — under development</p>
+    </div>
+  </div>
 </div>
 
 <!-- ============ WEB EXCEL VIEW ============ -->
-<div id="webExcelSection" class="container rounded-3xl shadow-2xl p-4 md:p-6 groovy-card hidden" style="max-width:750px;">
-  <header class="text-center mb-4">
-    <div class="mb-1 text-xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
-    <h1 class="text-2xl font-black tracking-wide">Web Excel View</h1>
-  </header>
+<div id="webExcelSection" class="section-page hidden" style="max-width:750px;">
+  <div class="panel-hero">
+    <div class="panel-hero-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+    </div>
+    <div class="panel-hero-text">
+      <h1>Web Excel View</h1>
+      <p>Weekly grid — copy straight to your Excel template</p>
+    </div>
+  </div>
 
   <!-- Week Navigation -->
   <div class="flex items-center justify-center gap-4 mb-3">
@@ -1001,6 +1171,30 @@
   const webExcelSection = document.getElementById('webExcelSection');
   
   const allSections = [homeSection, expenseSection, incomeSection, netWorthSection, configureSection, inflowOutflowSection, webExcelSection];
+
+  // === Theme toggle ===
+  // Persisted in localStorage; default = dark.
+  (function initTheme() {
+    const saved = localStorage.getItem('jmt-theme') || 'dark';
+    applyTheme(saved);
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const cur = document.documentElement.dataset.theme || 'dark';
+        applyTheme(cur === 'dark' ? 'light' : 'dark');
+      });
+    }
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem('jmt-theme', theme);
+      const moon = document.getElementById('themeIconMoon');
+      const sun  = document.getElementById('themeIconSun');
+      if (moon && sun) {
+        moon.classList.toggle('hidden', theme === 'light');
+        sun.classList.toggle('hidden',  theme === 'dark');
+      }
+    }
+  })();
 
   menuBtn.addEventListener('click', () => menuPanel.classList.toggle('hidden'));
   document.addEventListener('click', (e) => {
