@@ -61,6 +61,11 @@
 
     // Run after data is loaded — initialises all app state from cache
     function initAppData() {
+      // Defensive: ensure split-mode is OFF on every fresh load. If the body
+      // somehow has the class (from an earlier session's stale state), clear it.
+      document.body.classList.remove('split-mode');
+      try { localStorage.removeItem('jmt-split-mode'); } catch(e) {}
+
       // Re-sync in-memory vars from freshly loaded cache
       if (typeof expenses !== 'undefined') expenses = getData('expensesData', []);
       if (typeof incomes !== 'undefined')  incomes  = getData('incomeData', []);
@@ -1410,12 +1415,12 @@
     }
   };
 
-  // Restore split-mode preference on load (desktop only).
-  if (isDesktop() && localStorage.getItem('jmt-split-mode') === '1') {
-    document.body.classList.add('split-mode-init'); // prevents the redirect on initial restore
-    setSplitMode(true);
-    document.body.classList.remove('split-mode-init');
-  }
+  // Split mode is intentionally NOT auto-restored on page load.
+  // Always start in normal full-screen mode; the user toggles split mode
+  // explicitly via the Excel View button when they want it. This avoids
+  // the surprise of landing on a squashed home page.
+  // (Persistence kept for the toggle action itself in case we ever want
+  // to surface "remember my choice" — currently ignored on init.)
 
   // If the viewport drops below desktop while split-mode is on, turn it off
   // so the user doesn't see a broken stacked layout on phones.
