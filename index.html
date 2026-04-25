@@ -221,6 +221,10 @@
     /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
     #netWorthSection.dedicated-view > header { display: none !important; }
     #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
+    /* Hide the parent "Report Closing Balance" hero when a child tab is shown standalone.
+       The child .nw-panel renders its own panel-hero (Splitwise / Liabilities / Lend & Cash),
+       and we don't want both stacked. */
+    #netWorthSection.dedicated-view > .panel-hero { display: none !important; }
 
     /* === Page-hero — used on EVERY non-home section as a consistent title === */
     .panel-hero {
@@ -320,30 +324,94 @@
     /* Top icons in light theme should not stay cream */
     [data-theme="light"] #menuBtn span { background: var(--text-strong) !important; }
 
-    /* Light-theme color rescues for hard-coded Tailwind slate utilities used in calendars,
-       splitwise review, dialog cancel, gradient titles, and Net Worth snapshot. */
+    /* =====================================================================
+       LIGHT THEME — comprehensive contrast rescue
+       Most of the app's HTML uses Tailwind utility classes with hard-coded
+       dark colors (text-white, text-[#F4E2C9], bg-[#3D363A], border-[#5A5157]
+       etc) that look right on dark theme but break visibility on lavender.
+       The rules below systematically remap them onto amethyst tokens.
+       ===================================================================== */
+
+    /* --- Surfaces: dark-named greys → light surfaces --- */
     [data-theme="light"] .bg-slate-800,
-    [data-theme="light"] .bg-slate-700 { background-color: var(--surface-2) !important; color: var(--text); }
+    [data-theme="light"] .bg-slate-700 { background-color: var(--surface-2) !important; }
     [data-theme="light"] .border-slate-700 { border-color: var(--border) !important; }
     [data-theme="light"] .hover\:bg-slate-700:hover { background-color: var(--surface-3) !important; }
-    [data-theme="light"] .bg-slate-600 { background-color: var(--surface-3) !important; color: var(--text-strong); }
+    [data-theme="light"] .bg-slate-600 { background-color: var(--surface-3) !important; color: var(--text-strong) !important; }
     [data-theme="light"] .bg-slate-600.hover\:bg-slate-700:hover { background-color: var(--surface-3-hov) !important; }
-    /* Gradient title — amethyst tones on lavender */
-    [data-theme="light"] .from-slate-300.to-slate-500 {
-      background: linear-gradient(to right, #7B1FA2, #4A148C) !important;
-      -webkit-background-clip: text;
-      background-clip: text;
-    }
-    /* Net Worth snapshot block — was a dark gradient, soften for light theme */
-    [data-theme="light"] #netWorthSection header > div.from-slate-800\/50 { background: var(--surface-2) !important; }
-    [data-theme="light"] [class*="from-slate-800/50"] { background: var(--surface-2) !important; }
-    [data-theme="light"] [class*="from-slate-800/50"] .text-white { color: var(--text-strong) !important; text-shadow: none !important; }
+    /* Hard-coded hex backgrounds used in the menu / tabs / record-tally button */
+    [data-theme="light"] .bg-\[\#3D363A\]   { background-color: var(--surface-1) !important; }
+    [data-theme="light"] .bg-\[\#2F2A2D\]   { background-color: var(--surface-2) !important; }
+    [data-theme="light"] .bg-\[\#5A5157\],
+    [data-theme="light"] .hover\:bg-\[\#5A5157\]:hover { background-color: var(--surface-3) !important; }
+    [data-theme="light"] .border-\[\#5A5157\] { border-color: var(--border) !important; }
 
-    /* In light theme, text-white inside groovy-cards / groovy-buttons becomes white-on-white. */
-    [data-theme="light"] .groovy-card .text-white,
-    [data-theme="light"] .groovy-card.text-white { color: var(--text-strong) !important; }
-    [data-theme="light"] .groovy-button.text-white { color: var(--text-strong) !important; }
+    /* --- Text colors: cream / white → amethyst --- */
+    [data-theme="light"] .text-\[\#F4E2C9\] { color: var(--text-strong) !important; }
+    [data-theme="light"] .text-\[\#C3B4A8\] { color: var(--text) !important; }
+    /* text-white is everywhere — recolor it to amethyst headings, EXCEPT when
+       it sits on a colored utility background (green/red/purple/blue/orange) */
+    [data-theme="light"] .text-white { color: var(--text-strong) !important; }
+    [data-theme="light"] .bg-green-500.text-white,
+    [data-theme="light"] .bg-green-600.text-white,
+    [data-theme="light"] .bg-red-500.text-white,
+    [data-theme="light"] .bg-red-600.text-white,
+    [data-theme="light"] .bg-blue-600.text-white,
+    [data-theme="light"] .bg-blue-700.text-white,
+    [data-theme="light"] .bg-purple-600.text-white,
+    [data-theme="light"] .bg-purple-700.text-white,
+    [data-theme="light"] .bg-orange-500.text-white,
+    [data-theme="light"] .bg-orange-600.text-white {
+      color: #FFFFFF !important;     /* keep white on saturated buttons */
+    }
+    /* Buttons whose background is the cream/cream-toned groovy-button still need
+       legible text in light mode */
+    [data-theme="light"] .groovy-button { color: var(--text-strong) !important; }
+
+    /* --- Muted greys --- */
     [data-theme="light"] .text-gray-400 { color: var(--text-muted) !important; }
+    [data-theme="light"] .text-gray-500 { color: var(--text-muted) !important; }
+
+    /* --- Net Worth snapshot block (was a deep-blue gradient) --- */
+    [data-theme="light"] [class*="from-slate-800/50"] {
+      background: var(--surface-2) !important;
+      box-shadow: var(--shadow-card) !important;
+    }
+    [data-theme="light"] [class*="from-slate-800/50"] .text-white {
+      color: var(--text-strong) !important;
+      text-shadow: none !important;
+    }
+
+    /* --- "J Money Tracker" gradient title — special case ---
+       The HTML uses bg-clip-text + text-transparent + a Tailwind gradient.
+       In light mode, swap the WebKit text fill to a solid amethyst directly.
+       This is more robust than fighting Tailwind's --tw-gradient-* variables. */
+    [data-theme="light"] .bg-clip-text.text-transparent {
+      -webkit-text-fill-color: #4A148C !important;
+      color: #4A148C !important;
+      background: none !important;
+      background-image: none !important;
+    }
+
+    /* --- Splitwise review banner had bg-slate-700 with white-ish text --- */
+    [data-theme="light"] #splitwiseReview { background-color: var(--surface-2) !important; color: var(--text) !important; }
+
+    /* --- The dialog cancel buttons (.bg-slate-600) — make white text amethyst --- */
+    [data-theme="light"] .bg-slate-600.text-white { color: var(--text-strong) !important; }
+
+    /* --- Inputs: ensure decent placeholder contrast --- */
+    [data-theme="light"] input,
+    [data-theme="light"] select,
+    [data-theme="light"] textarea {
+      color: var(--text-strong) !important;
+    }
+
+    /* --- Hamburger top bar lines (animated icon) --- */
+    [data-theme="light"] #menuBtn span { background-color: var(--text-strong) !important; }
+
+    /* --- Bottom-nav SVG icons --- */
+    [data-theme="light"] #bottomNav .bn-btn svg { color: var(--text); }
+    [data-theme="light"] #bottomNav .bn-btn.active svg { color: var(--text-strong); }
   </style>
 </head>
 <body class="min-h-screen" style="overflow-x:hidden;">
@@ -773,7 +841,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
       <div class="panel-hero-text">
-        <h2>Lend / Cash Holdings</h2>
+        <h1>Lend / Cash Holdings</h1>
       </div>
     </div>
 
@@ -815,7 +883,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
       </div>
       <div class="panel-hero-text">
-        <h2>Splitwise</h2>
+        <h1>Splitwise</h1>
       </div>
     </div>
 
@@ -846,7 +914,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
       </div>
       <div class="panel-hero-text">
-        <h2>Liabilities</h2>
+        <h1>Liabilities</h1>
       </div>
     </div>
 
