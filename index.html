@@ -2381,6 +2381,7 @@
       loginPage.classList.remove('hidden');
       loginBtn.disabled = false;
       loginLoadingMsg.classList.add('hidden');
+      loginError.classList.add('hidden');
     }
 
     function showErr(msg) {
@@ -2390,18 +2391,29 @@
 
     let _appInitialized = false;
 
-    async function showApp() {
-      if (_appInitialized) return; // guard: don't run twice (token refresh etc.)
+    // Pass session directly — avoids extra getUser() network call inside showApp
+    async function showApp(session) {
+      if (_appInitialized) return;
+      _appInitialized = true; // set IMMEDIATELY (before any await) to block re-entry
+
+      // If no session passed in, try reading from local storage (no network needed)
+      if (!session) {
+        const { data } = await _supabase.auth.getSession();
+        session = data?.session;
+      }
+
+      if (!session) {
+        _appInitialized = false;
+        showLogin();
+        return;
+      }
 
       try {
-        const { data: { user }, error: userErr } = await _supabase.auth.getUser();
-        if (userErr || !user) { showLogin(); return; }
-
-        _currentUserId = user.id;
-        _appInitialized = true;
+        _currentUserId = session.user.id;
 
         loginLoadingMsg.textContent = 'Loading your data…';
         loginLoadingMsg.classList.remove('hidden');
+        loginBtn.disabled = true;
 
         await dbLoad();
 
@@ -2427,23 +2439,24 @@
         _appInitialized = false;
         loginLoadingMsg.classList.add('hidden');
         loginBtn.disabled = false;
-        showErr('Failed to load app data. Check your internet connection and try again.');
+        showErr('App failed to load: ' + (err.message || 'Unknown error — check browser console.'));
       }
     }
 
-    // ── Auth state listener ──────────────────────────────────────────────────
-    // onAuthStateChange fires immediately with the current session on page load
-    // (replaces the old getSession() + onAuthStateChange double-call pattern)
-    _supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        showApp();
-      } else {
-        // Only call showLogin() if app was previously shown (i.e. a real sign-out)
-        if (_appInitialized) showLogin();
-      }
+    // ── 1. Check for existing session immediately on page load ───────────────
+    // getSession() reads local storage — no network request, works offline
+    _supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) showApp(data.session);
     });
 
-    // ── Login button ─────────────────────────────────────────────────────────
+    // ── 2. Listen for sign-in / sign-out events ──────────────────────────────
+    _supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN')  showApp(session);
+      if (event === 'SIGNED_OUT') { _appInitialized = false; showLogin(); }
+      // TOKEN_REFRESHED and other events are safely ignored
+    });
+
+    // ── 3. Login button ──────────────────────────────────────────────────────
     loginBtn.addEventListener('click', async () => {
       const email    = loginEmail.value.trim();
       const password = loginPass.value;
@@ -2459,15 +2472,15 @@
         if (error) {
           let msg = error.message;
           if (msg.toLowerCase().includes('email not confirmed')) {
-            msg = 'Your email is not confirmed. In your Supabase dashboard go to Authentication → Users, find your user and click "Confirm" — or go to Authentication → Providers → Email and turn off "Confirm email".';
+            msg = 'Your account email is not confirmed. In your Supabase dashboard go to Authentication → Users, find your user, click the ⋯ menu and choose "Send confirmation email" — or disable email confirmation entirely under Authentication → Providers → Email.';
           } else if (msg.toLowerCase().includes('invalid login credentials')) {
-            msg = 'Incorrect email or password. Make sure you created a user under Authentication → Users in your Supabase dashboard.';
+            msg = 'Incorrect email or password. Make sure you created your user under Authentication → Users in the Supabase dashboard.';
           }
           showErr(msg);
           loginBtn.disabled = false;
           loginLoadingMsg.classList.add('hidden');
         }
-        // On success → onAuthStateChange fires with session → showApp() takes over
+        // On success → SIGNED_IN event fires above → showApp(session) takes over
       } catch (err) {
         showErr('Network error — check your internet connection and try again.');
         loginBtn.disabled = false;
@@ -2475,12 +2488,12 @@
       }
     });
 
-    // Enter key submits login
+    // Enter key submits
     [loginEmail, loginPass].forEach(el => {
       el.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
     });
 
-    // ── Logout ───────────────────────────────────────────────────────────────
+    // ── 4. Logout ────────────────────────────────────────────────────────────
     document.getElementById('navLogout').addEventListener('click', async () => {
       _currentUserId = null;
       Object.keys(_dbCache).forEach(k => delete _dbCache[k]);
