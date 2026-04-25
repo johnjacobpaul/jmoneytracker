@@ -300,7 +300,7 @@
       <option>Contingency</option>
       <option>Home Outflow JJP</option><option>Home Outflow EEM</option><option>Education Loan</option>
       <option>EEM Sydney Expenses</option><option>Offering</option><option>CC Settlement</option>
-      <option>Investment</option><option>Lend /Cash Holdings</option><option>JJP CBA Credit</option>
+      <option>Investment</option><option>Lend /Cash Holdings</option>
     </select>
 
     <select id="paymentMode" required class="w-full p-4 rounded-xl">
@@ -374,6 +374,10 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
     <button id="btnQuickJJPSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record JJP Salary</button>
     <button id="btnQuickEEMSalary" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">Record EEM Salary</button>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <button id="btnQuickJJPInterest" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">💰 Credit Interest JJP</button>
+    <button id="btnQuickEEMInterest" class="w-full text-white font-semibold py-3 rounded-xl groovy-button">💰 Credit Interest EEM</button>
   </div>
   <div class="text-center mb-4">
     <button id="configureSalariesBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">Configure Salaries</button>
@@ -617,6 +621,39 @@
   <p class="mt-2 opacity-80">This feature is under development.</p>
 </div>
 
+<!-- ============ WEB EXCEL VIEW ============ -->
+<div id="webExcelSection" class="container rounded-3xl shadow-2xl p-4 md:p-6 groovy-card hidden" style="max-width:750px;">
+  <header class="text-center mb-4">
+    <div class="mb-1 text-xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-slate-300 to-slate-500">J Money Tracker</div>
+    <h1 class="text-2xl font-black tracking-wide">Web Excel View</h1>
+  </header>
+
+  <!-- Week Navigation -->
+  <div class="flex items-center justify-center gap-4 mb-3">
+    <button id="wxPrevWeek" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&lt;</button>
+    <span id="wxWeekLabel" class="text-sm font-semibold text-white"></span>
+    <button id="wxNextWeek" class="p-2 rounded-full groovy-button text-lg leading-none flex items-center justify-center w-8 h-8">&gt;</button>
+  </div>
+
+  <!-- Copy Button -->
+  <div class="flex justify-end mb-2">
+    <button id="wxCopyBtn" class="px-4 py-2 rounded-xl text-sm font-semibold groovy-button text-white flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+      Copy B→H
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto rounded-xl">
+    <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.72rem;">
+      <thead id="wxThead"></thead>
+      <tbody id="wxTbody"></tbody>
+    </table>
+  </div>
+
+  <p class="text-xs opacity-50 mt-3 text-center">Click Copy B→H then paste (Ctrl+V) directly into your Excel template starting from cell B3.</p>
+</div>
+
 
 <!-- ===== SALARY CONFIG DIALOG ===== -->
 <div id="salaryConfigDialog" class="dialog-overlay hidden">
@@ -801,8 +838,9 @@
   const netWorthSection = document.getElementById('netWorthSection');
   const configureSection = document.getElementById('configureSection');
   const inflowOutflowSection = document.getElementById('inflowOutflowSection');
+  const webExcelSection = document.getElementById('webExcelSection');
   
-  const allSections = [homeSection, expenseSection, incomeSection, netWorthSection, configureSection, inflowOutflowSection];
+  const allSections = [homeSection, expenseSection, incomeSection, netWorthSection, configureSection, inflowOutflowSection, webExcelSection];
 
   menuBtn.addEventListener('click', () => menuPanel.classList.toggle('hidden'));
   document.addEventListener('click', (e) => {
@@ -831,7 +869,7 @@
     activateTab(document.querySelector('[data-tab="tab-assets"]'));
   };
   document.getElementById('navInflowOutflow').onclick = () => showSection(inflowOutflowSection);
-  document.getElementById('navAnalytics').onclick = () => alert("Web Excel View coming soon!");
+  document.getElementById('navAnalytics').onclick = () => { showSection(webExcelSection); renderWebExcel(); };
   document.getElementById('navClearData').onclick = async () => {
     if (confirm('⚠️ DANGER! This will permanently delete ALL data from the tracker. This cannot be undone. Are you absolutely sure?')) {
         await dbClear();
@@ -846,7 +884,7 @@
     const menuButtons = document.querySelectorAll('#menuPanel button[id^="nav"]');
     
     menuButtons.forEach(btn => {
-        if (['navClearData', 'navViewLogs', 'navHome', 'navExportData', 'navImportData'].includes(btn.id)) return;
+        if (['navClearData', 'navViewLogs', 'navHome', 'navExportData', 'navImportData', 'navLogout'].includes(btn.id)) return;
 
         const tile = document.createElement('button');
         tile.className = 'flex flex-col items-center justify-center p-4 rounded-2xl groovy-card hover:bg-[#5A5157] transition-transform hover:scale-105 text-center';
@@ -1499,6 +1537,18 @@
     rerenderIncomeLog();
   });
 
+  // Credit Interest quick-log: pre-fills category, user types amount
+  document.getElementById('btnQuickJJPInterest').addEventListener('click', () => {
+    showSection(incomeSection);
+    incomeCategory.value = 'JJP Credit Interest';
+    incomeAmount.focus();
+  });
+  document.getElementById('btnQuickEEMInterest').addEventListener('click', () => {
+    showSection(incomeSection);
+    incomeCategory.value = 'EEM Credit Interest';
+    incomeAmount.focus();
+  });
+
   incomeForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const date = incomeDate.value;
@@ -2076,7 +2126,243 @@
     });
   })();
 
-  // ===== AUTH: LOGIN + LOGOUT =====
+  // ===== WEB EXCEL VIEW =====
+  (function() {
+    const DEBIT_MODES = new Set(['JJP CBA Debit','EEM CBA Debit','JJP ING Debit','EEM ING Debit','Westpac Debit']);
+    const CC_MODES    = new Set(['Amex Credit','Velocity Credit']);
+
+    // Row definitions — order matches Excel template (Col A)
+    // rowspan:2 → label cell spans this row + next; label:null → no label cell (second of pair)
+    // src: 'income' | 'expense' | 'sw_splitwise' | 'sw_settled'
+    // modeFilter: 'cc' | 'debit' | undefined (all modes)
+    // negate: flip sign for display & copy (PAYG withheld, splitwise sign flip)
+    const WX_ROWS = [
+      {label:'Credit Interest JJP',     color:'green',  src:'income',       cat:'JJP Credit Interest'},
+      {label:'Credit Interest EEM',     color:'green',  src:'income',       cat:'EEM Credit Interest'},
+      {label:'JJP Wages',               color:'green',  src:'income',       cat:'JJP Wage'},
+      {label:'JJP - Tax',               color:'green',  src:'income',       cat:'JJP PAYG',            negate:true},
+      {label:'EEM Wages',               color:'green',  src:'income',       cat:'EEM Wage'},
+      {label:'EEM Tax',                 color:'green',  src:'income',       cat:'EEM PAYG',            negate:true},
+      // Yellow only
+      {label:'Home Outflow JJP',        color:'yellow', src:'expense',      cat:'Home Outflow JJP'},
+      {label:'Home Outflow EEM',        color:'yellow', src:'expense',      cat:'Home Outflow EEM'},
+      {label:'Education Loan',          color:'yellow', src:'expense',      cat:'Education Loan'},
+      // Paired (grey CC first, yellow Debit second)
+      {label:'Gym',                     color:'grey',   src:'expense',      cat:'Gym',                 modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Gym',                 modeFilter:'debit'},
+      {label:'Contingency',             color:'grey',   src:'expense',      cat:'Contingency',         modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Contingency',         modeFilter:'debit'},
+      // Yellow only
+      {label:'Rent',                    color:'yellow', src:'expense',      cat:'Rent'},
+      // Grey only
+      {label:'Health Insurance',        color:'grey',   src:'expense',      cat:'Health Insurance'},
+      // Paired
+      {label:'Digital Subscriptions',   color:'grey',   src:'expense',      cat:'Digital Subscription',modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Digital Subscription',modeFilter:'debit'},
+      {label:'Bills',                   color:'grey',   src:'expense',      cat:'Bills',               modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Bills',               modeFilter:'debit'},
+      {label:'Fuel',                    color:'grey',   src:'expense',      cat:'Fuel',                modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Fuel',                modeFilter:'debit'},
+      {label:'Car Related',             color:'grey',   src:'expense',      cat:'Car Related',         modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Car Related',         modeFilter:'debit'},
+      {label:'Grocery & Snacks',        color:'grey',   src:'expense',      cat:'Grocery & Snacks',    modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Grocery & Snacks',    modeFilter:'debit'},
+      {label:'Dine Out',                color:'grey',   src:'expense',      cat:'Dine Out',            modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Dine Out',            modeFilter:'debit'},
+      {label:'Personal',                color:'grey',   src:'expense',      cat:'Personal',            modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Personal',            modeFilter:'debit'},
+      {label:'Other',                   color:'grey',   src:'expense',      cat:'Other',               modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Other',               modeFilter:'debit'},
+      {label:'Transportation',          color:'grey',   src:'expense',      cat:'Transportation',      modeFilter:'cc',    rowspan:2},
+      {label:null,                      color:'yellow', src:'expense',      cat:'Transportation',      modeFilter:'debit'},
+      // Yellow only
+      {label:'Offering',                color:'yellow', src:'expense',      cat:'Offering'},
+      // Splitwise
+      {label:'Splitwise (Credit Card)', color:'grey',   src:'sw_splitwise', modeFilter:'cc',    negate:true},
+      {label:'Splitwise (Debit Card)',  color:'yellow', src:'sw_splitwise', modeFilter:'debit', negate:true},
+      {label:'Splitwise (Settled)',     color:'yellow', src:'sw_settled'},
+    ];
+
+    // Colour styles
+    const COLOR_STYLES = {
+      green:  'background:#C6EFCE;color:#276221;',
+      yellow: 'background:#FFFFCC;color:#333;',
+      grey:   'background:#D9D9D9;color:#333;',
+    };
+    const LABEL_STYLE = 'background:#2F2A2D;color:#F4E2C9;font-weight:600;padding:4px 6px;text-align:center;vertical-align:middle;border:1px solid #5A5157;white-space:nowrap;font-size:0.7rem;';
+    const HEADER_STYLE = 'background:#3D363A;color:#F4E2C9;font-weight:700;padding:6px 4px;text-align:center;border:1px solid #5A5157;';
+
+    const DAYS = ['Sat','Sun','Mon','Tue','Wed','Thu','Fri'];
+
+    let wxWeekStart = wxGetWeekStart();
+
+    function wxGetWeekStart() {
+      const today = new Date(); const d = today.getDay();
+      const diff = (d === 6 ? 0 : d + 1);
+      const s = new Date(today); s.setDate(today.getDate() - diff); s.setHours(0,0,0,0); return s;
+    }
+
+    function wxWeekDates() {
+      return Array.from({length:7}, (_,i) => { const d=new Date(wxWeekStart); d.setDate(d.getDate()+i); return d; });
+    }
+
+    function toIso(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function getAmounts(rowDef, dateStr) {
+      const {src, cat, modeFilter, negate} = rowDef;
+      const sign = negate ? -1 : 1;
+      let raw = [];
+
+      if (src === 'income') {
+        raw = getData('incomeData', [])
+          .filter(e => e.date === dateStr && e.category === cat)
+          .map(e => e.amount * sign);
+
+      } else if (src === 'expense') {
+        raw = getData('expensesData', [])
+          .filter(e => {
+            if (e.date !== dateStr || e.category !== cat) return false;
+            if (e.affectsTotal !== 'Yes') return false;
+            if (modeFilter === 'cc'    && !CC_MODES.has(e.mode))    return false;
+            if (modeFilter === 'debit' && !DEBIT_MODES.has(e.mode)) return false;
+            return true;
+          })
+          .map(e => e.amount * sign);
+
+      } else if (src === 'sw_splitwise') {
+        raw = getData('expensesData', [])
+          .filter(e => {
+            if (e.date !== dateStr || e.category !== 'Splitwise') return false;
+            if (modeFilter === 'cc'    && !CC_MODES.has(e.mode))    return false;
+            if (modeFilter === 'debit' && !DEBIT_MODES.has(e.mode)) return false;
+            return true;
+          })
+          .map(e => e.amount * sign);
+
+      } else if (src === 'sw_settled') {
+        raw = getData('nwSplitwiseSettlements', [])
+          .filter(e => e.date === dateStr)
+          .map(e => e.amount);
+      }
+
+      return raw.map(v => Math.round(v * 100) / 100).filter(v => v !== 0);
+    }
+
+    function toCopyVal(amounts) {
+      if (amounts.length === 0) return '';
+      if (amounts.length === 1) return String(amounts[0]);
+      return '=' + amounts.join('+');
+    }
+
+    function toDisplayVal(amounts) {
+      if (amounts.length === 0) return '';
+      return amounts.reduce((s,v) => s+v, 0).toFixed(2);
+    }
+
+    function renderWebExcel() {
+      const dates = wxWeekDates();
+      const isoList = dates.map(toIso);
+
+      // Week label
+      document.getElementById('wxWeekLabel').textContent =
+        'Week of ' + wxWeekStart.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+
+      // ---- HEADER ----
+      const thead = document.getElementById('wxThead');
+      thead.innerHTML = '';
+
+      const hr1 = document.createElement('tr');
+      const thCat = document.createElement('th');
+      thCat.rowSpan = 2; thCat.style.cssText = HEADER_STYLE + 'min-width:110px;';
+      thCat.textContent = 'Category';
+      hr1.appendChild(thCat);
+      DAYS.forEach(day => {
+        const th = document.createElement('th');
+        th.style.cssText = HEADER_STYLE + 'min-width:62px;';
+        th.textContent = day; hr1.appendChild(th);
+      });
+      thead.appendChild(hr1);
+
+      const hr2 = document.createElement('tr');
+      dates.forEach(d => {
+        const th = document.createElement('th');
+        th.style.cssText = HEADER_STYLE + 'font-weight:400;font-size:0.65rem;';
+        th.textContent = d.toLocaleDateString('en-AU', {day:'numeric', month:'short'});
+        hr2.appendChild(th);
+      });
+      thead.appendChild(hr2);
+
+      // ---- BODY ----
+      const tbody = document.getElementById('wxTbody');
+      tbody.innerHTML = '';
+
+      WX_ROWS.forEach(rowDef => {
+        const tr = document.createElement('tr');
+        tr.className = 'wx-data-row';
+
+        // Label cell (skipped for null — previous rowspan covers it)
+        if (rowDef.label !== null) {
+          const td = document.createElement('td');
+          td.style.cssText = LABEL_STYLE;
+          if (rowDef.rowspan) td.rowSpan = rowDef.rowspan;
+          td.textContent = rowDef.label;
+          tr.appendChild(td);
+        }
+
+        const colorStyle = COLOR_STYLES[rowDef.color] || '';
+        const cellBase = `${colorStyle}padding:3px 4px;text-align:right;border:1px solid #ccc;`;
+
+        // Day cells
+        isoList.forEach(iso => {
+          const amounts = getAmounts(rowDef, iso);
+          const td = document.createElement('td');
+          td.className = 'wx-day-cell';
+          td.dataset.copyValue = toCopyVal(amounts);
+          td.style.cssText = cellBase;
+          const dv = toDisplayVal(amounts);
+          td.textContent = dv;
+          // Colour negative values red for quick visual scan
+          if (dv && parseFloat(dv) < 0) td.style.color = '#c0392b';
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Copy: columns B–H only (wx-day-cell), tab+newline separated, formula format
+    document.getElementById('wxCopyBtn').addEventListener('click', () => {
+      const rows = document.querySelectorAll('.wx-data-row');
+      const lines = Array.from(rows).map(row => {
+        const cells = row.querySelectorAll('.wx-day-cell');
+        return Array.from(cells).map(c => c.dataset.copyValue || '').join('\t');
+      });
+      navigator.clipboard.writeText(lines.join('\n')).then(() => {
+        const btn = document.getElementById('wxCopyBtn');
+        const orig = btn.innerHTML;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.innerHTML = orig, 2000);
+      }).catch(() => alert('Copy failed — please select the table manually and copy.'));
+    });
+
+    // Week navigation
+    document.getElementById('wxPrevWeek').addEventListener('click', () => {
+      wxWeekStart = new Date(wxWeekStart); wxWeekStart.setDate(wxWeekStart.getDate() - 7);
+      renderWebExcel();
+    });
+    document.getElementById('wxNextWeek').addEventListener('click', () => {
+      const next = new Date(wxWeekStart); next.setDate(next.getDate() + 7);
+      const limit = wxGetWeekStart(); limit.setDate(limit.getDate() + 7);
+      if (next < limit) { wxWeekStart = next; renderWebExcel(); }
+    });
+
+    // Expose for navAnalytics click
+    window.renderWebExcel = renderWebExcel;
+  })();
+
+</script>
   (function() {
     const loginPage  = document.getElementById('loginPage');
     const mainApp    = document.getElementById('mainApp');
