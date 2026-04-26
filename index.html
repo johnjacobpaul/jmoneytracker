@@ -1348,6 +1348,10 @@
     <h3 class="text-xl font-semibold mb-3">Add Lend/Cash Holding</h3>
     <div class="space-y-3">
       <div>
+        <label class="label-sm" for="lcDate">Date</label>
+        <input id="lcDate" type="date" class="w-full p-3 mt-1 rounded-lg">
+      </div>
+      <div>
         <label class="label-sm" for="lcAmount">Amount</label>
         <input id="lcAmount" type="number" step="0.01" inputmode="decimal" class="w-full p-3 mt-1 rounded-lg" placeholder="e.g., 150.00">
       </div>
@@ -2674,7 +2678,17 @@
   const lcSave = document.getElementById('lcSave');
   const lcCancel = document.getElementById('lcCancel');
   let lendCash = getData('nwLendCash', []);
-  function openLc(){ lcAmount.value=""; lcCategory.value="Lend"; lcPaymentMode.value=""; lcDesc.value=""; lcDialog.classList.remove('hidden'); }
+  function openLc(){
+    const today = new Date();
+    const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const lcDate = document.getElementById('lcDate');
+    if (lcDate) lcDate.value = iso;
+    lcAmount.value="";
+    lcCategory.value="Lend";
+    lcPaymentMode.value="";
+    lcDesc.value="";
+    lcDialog.classList.remove('hidden');
+  }
   function closeLc(){ lcDialog.classList.add('hidden'); }
   lcAddBtn.addEventListener('click', openLc);
   lcCancel.addEventListener('click', closeLc);
@@ -2696,8 +2710,12 @@
     const mode = lcPaymentMode.value;
     if (isNaN(amt) || amt === 0){ alert('Enter a non-zero amount.'); return; }
     if (!mode) { alert('Please select a payment mode.'); return; }
-    const now = new Date();
-    const iso = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const lcDate = document.getElementById('lcDate');
+    const iso = (lcDate && lcDate.value) ? lcDate.value : (() => {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    })();
+    if (!iso) { alert('Please pick a date.'); return; }
     lendCash.push({ id: Date.now()+Math.random(), date: iso, amount: Math.round(amt*100)/100, category: lcCategory.value, desc: lcDesc.value||"", mode: mode });
     saveLendCash(); renderLcLog(); closeLc();
   });
