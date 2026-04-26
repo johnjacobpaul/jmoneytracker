@@ -397,6 +397,121 @@
     #themeToggle:hover { background: var(--surface-3); }
     #themeToggle svg { width: 1.1rem; height: 1.1rem; }
 
+    /* Notes button (top bar, between theme toggle and edge) */
+    #notesBtn {
+      position: fixed; top: 1rem; right: 8rem; z-index: 50;
+      width: 2.5rem; height: 2.5rem;
+      border-radius: 9999px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      color: var(--text-strong);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-button);
+      transition: background .2s;
+    }
+    #notesBtn:hover { background: var(--surface-3); }
+    #notesBtn svg { width: 1.1rem; height: 1.1rem; }
+    /* Hide notes button on Web Excel and in split-mode, same as theme toggle */
+    body.wx-active #notesBtn,
+    body.split-mode #notesBtn { display: none !important; }
+
+    /* Notes side panel */
+    #notesPanel {
+      position: fixed;
+      top: 4.5rem;
+      right: 1rem;
+      z-index: 55;
+      width: min(360px, calc(100vw - 2rem));
+      max-height: calc(100vh - 6rem);
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateX(calc(100% + 2rem));
+      transition: transform 0.22s ease, opacity 0.22s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #notesPanel.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #notesPanel .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    #notesPanel .notes-header h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+    #notesPanel .notes-status {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-right: 8px;
+      min-width: 50px;
+      text-align: right;
+    }
+    #notesPanel .notes-close {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    #notesPanel .notes-close:hover { background: var(--surface-2); color: var(--text-strong); }
+    #notesPanel textarea {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 380px;
+      padding: 12px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-strong);
+      font-family: inherit;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+    }
+
+    /* Expense filter — payment mode picker above the log */
+    .expense-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      font-size: 0.78rem;
+    }
+    .expense-filter-bar label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .expense-filter-bar select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text-strong);
+      font-size: 0.78rem;
+    }
+    .expense-filter-bar .filter-count {
+      margin-left: auto;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
     /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
     #netWorthSection.dedicated-view > header { display: none !important; }
     #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
@@ -709,6 +824,23 @@
   <svg id="themeIconSun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="hidden"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.5-6.5l-.7.7M6.2 17.8l-.7.7m13-.7l.7.7M6.2 6.2l-.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
 </button>
 
+<!-- Notes button — opens a small notepad side panel -->
+<button id="notesBtn" type="button" aria-label="Open notes" title="Notes">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h6m-6 4h4"/></svg>
+</button>
+
+<!-- Notes side panel -->
+<div id="notesPanel" role="dialog" aria-label="Notes">
+  <div class="notes-header">
+    <h3>Notes</h3>
+    <div class="flex items-center">
+      <span id="notesStatus" class="notes-status"></span>
+      <button id="notesCloseBtn" class="notes-close" type="button" aria-label="Close notes">×</button>
+    </div>
+  </div>
+  <textarea id="notesTextarea" placeholder="Jot down anything…" spellcheck="true"></textarea>
+</div>
+
 <!-- ============ LOGIN PAGE ============ -->
 <div id="loginPage" class="fixed inset-0 z-[100] flex items-center justify-center p-4" style="background:var(--app-bg);">
   <div class="container rounded-3xl shadow-2xl p-8 groovy-card w-full max-w-sm">
@@ -956,6 +1088,19 @@
 
   <div class="text-center mt-6">
     <button id="toggleLogsBtn" class="text-sm text-sky-400 hover:text-sky-300 underline">View Expense Logs</button>
+  </div>
+  <div id="expenseFilterBar" class="expense-filter-bar hidden">
+    <label for="expenseFilterMode">Payment mode:</label>
+    <select id="expenseFilterMode">
+      <option value="">All</option>
+      <option>Amex Credit</option>
+      <option>Velocity Credit</option>
+      <option>JJP CBA Debit</option>
+      <option>Westpac Debit</option>
+      <option>JJP ING Debit</option>
+      <option>EEM ING Debit</option>
+    </select>
+    <span id="expenseFilterCount" class="filter-count"></span>
   </div>
   <section id="expenseLog" class="mt-4 space-y-2 hidden"></section>
 </div>
@@ -1557,6 +1702,70 @@
         sun.classList.toggle('hidden',  theme === 'dark');
       }
     }
+  })();
+
+  // === Notes side panel ===
+  // Lightweight notepad. Loads from cached `userNotes`, autosaves on input
+  // (debounced 600ms) and writes through dbSet so it syncs to Supabase like
+  // the rest of the app. Opens via the notes icon, closes via × or Escape.
+  (function initNotes() {
+    const notesBtn = document.getElementById('notesBtn');
+    const notesPanel = document.getElementById('notesPanel');
+    const notesTextarea = document.getElementById('notesTextarea');
+    const notesCloseBtn = document.getElementById('notesCloseBtn');
+    const notesStatus = document.getElementById('notesStatus');
+    if (!notesBtn || !notesPanel || !notesTextarea) return;
+
+    let saveTimer = null;
+    let lastLoadedValue = '';
+
+    function loadNotes() {
+      const raw = getData('userNotes', '');
+      // userNotes may be wrapped in {text, updatedAt} or be a plain string
+      const text = (raw && typeof raw === 'object' && 'text' in raw) ? raw.text : (raw || '');
+      notesTextarea.value = text;
+      lastLoadedValue = text;
+    }
+
+    function saveNotes() {
+      const text = notesTextarea.value;
+      dbSet('userNotes', { text, updatedAt: new Date().toISOString() });
+      notesStatus.textContent = 'Saved';
+      setTimeout(() => { if (notesStatus.textContent === 'Saved') notesStatus.textContent = ''; }, 1500);
+    }
+
+    function openNotes() {
+      // Re-load in case other devices/sessions updated it
+      loadNotes();
+      notesPanel.classList.add('open');
+      notesBtn.setAttribute('aria-expanded', 'true');
+      // Defer focus so the slide-in animation doesn't fight the caret
+      setTimeout(() => notesTextarea.focus(), 220);
+    }
+    function closeNotes() {
+      notesPanel.classList.remove('open');
+      notesBtn.setAttribute('aria-expanded', 'false');
+      // Flush any pending save before closing
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; saveNotes(); }
+    }
+
+    notesBtn.addEventListener('click', () => {
+      if (notesPanel.classList.contains('open')) closeNotes(); else openNotes();
+    });
+    notesCloseBtn.addEventListener('click', closeNotes);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && notesPanel.classList.contains('open')) closeNotes();
+    });
+
+    // Debounced autosave on input
+    notesTextarea.addEventListener('input', () => {
+      notesStatus.textContent = 'Saving…';
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { saveNotes(); saveTimer = null; }, 600);
+    });
+
+    // Initial load (so the textarea has content if the user opens the panel)
+    loadNotes();
   })();
 
   menuBtn.addEventListener('click', () => menuPanel.classList.toggle('hidden'));
@@ -2198,9 +2407,19 @@
   
   function renderExpenseLogForWeek(weekStart, weekEnd) {
     expenseLog.innerHTML = "";
-    const weeklyExpenses = expenses.filter(e => isDateInWeek(e.date, weekStart, weekEnd));
+    const filterEl = document.getElementById('expenseFilterMode');
+    const modeFilter = (filterEl && filterEl.value) || '';
+    let weeklyExpenses = expenses.filter(e => isDateInWeek(e.date, weekStart, weekEnd));
+    if (modeFilter) weeklyExpenses = weeklyExpenses.filter(e => e.mode === modeFilter);
     weeklyExpenses.sort((a,b) => new Date(b.date) - new Date(a.date) || b.id.localeCompare(a.id));
     weeklyExpenses.forEach(e => renderRow(e));
+    // Live count beside the filter dropdown
+    const countEl = document.getElementById('expenseFilterCount');
+    if (countEl) {
+      countEl.textContent = modeFilter
+        ? `${weeklyExpenses.length} entries (${modeFilter})`
+        : (weeklyExpenses.length ? `${weeklyExpenses.length} entries` : '');
+    }
   }
   
   function updateExpenseViewForWeek(newWeekStart) {
@@ -2259,8 +2478,19 @@
   
   toggleLogsBtn.addEventListener('click', () => {
     expenseLog.classList.toggle('hidden');
+    const filterBar = document.getElementById('expenseFilterBar');
+    if (filterBar) filterBar.classList.toggle('hidden', expenseLog.classList.contains('hidden'));
     toggleLogsBtn.textContent = expenseLog.classList.contains('hidden') ? 'View Expense Logs' : 'Hide Expense Logs';
   });
+
+  // Wire the payment mode filter — re-render the current week's log on change
+  const expenseFilterEl = document.getElementById('expenseFilterMode');
+  if (expenseFilterEl) {
+    expenseFilterEl.addEventListener('change', () => {
+      const weekEnd = getWeekEndFrom(displayedWeekStart);
+      renderExpenseLogForWeek(displayedWeekStart, weekEnd);
+    });
+  }
 
   document.getElementById('expenseForm').addEventListener('submit',(e)=>{
     e.preventDefault();
