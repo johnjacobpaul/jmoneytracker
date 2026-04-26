@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>J Money Tracker - V4.6.15</title>
+  <title>J Money Tracker - v1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -259,6 +259,58 @@
     /* Misc */
     .log-item { background: var(--input-bg); border: 1px solid var(--border); padding: 10px; border-radius: 10px; position: relative; color: var(--text); }
     .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: var(--danger); font-weight: bold; }
+    .edit-btn   { position: absolute; right: 30px; top: 8px; cursor: pointer; color: var(--text-strong); font-weight: bold; opacity: 0.6; transition: opacity 0.15s; user-select: none; }
+    .edit-btn:hover { opacity: 1; }
+    .log-item.editing .delete-btn,
+    .log-item.editing .edit-btn { display: none; }
+    .inline-editor {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .inline-editor .ie-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .inline-editor label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .inline-editor input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text-strong);
+      font-size: 0.85rem;
+    }
+    .inline-editor .ie-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .inline-editor button {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .inline-editor .ie-save { background: var(--surface-3); color: var(--text-strong); }
+    .inline-editor .ie-save:hover { background: var(--surface-3-hov); }
+    .inline-editor .ie-cancel { background: transparent; color: var(--text); }
+    .inline-editor .ie-cancel:hover { background: var(--surface-2); }
+    [data-theme="light"] .inline-editor .ie-save { background: var(--accent); color: #fff; border-color: var(--accent); }
+    [data-theme="light"] .inline-editor .ie-save:hover { background: var(--accent-hov); }
     .neg { color: var(--neg-color); } .pos { color: var(--pos-color); }
     .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; justify-content: center; align-items: center; z-index: 50; }
     .dialog-box { background: var(--surface-1); border: 1px solid var(--border); color: var(--text-strong); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: left; }
@@ -948,7 +1000,7 @@
       <select id="incomeCategory" required class="w-full p-3 rounded-xl">
         <option value="" disabled selected>Select Category</option>
         <option>JJP Wage</option><option>EEM Wage</option><option>Tax Return</option>
-        <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>Cashback/Rewards</option><option>JJP PAYG</option>
+        <option>EEM Credit Interest</option><option>JJP Credit Interest</option><option>JJP PAYG</option>
       </select>
     </div>
 
@@ -1360,6 +1412,7 @@
         <select id="lcCategory" class="w-full p-3 mt-1 rounded-lg">
           <option>Lend</option>
           <option>Cash Holdings</option>
+          <option>Settle Lend</option>
         </select>
       </div>
       <div>
@@ -1718,6 +1771,61 @@
     el.addEventListener('input',()=>{ const v=el.value; if(!v) return; const p=v.split('.'); if(p.length===2 && p[1].length>2){ p[1]=p[1].slice(0,2); el.value=p.join('.'); }});
     el.addEventListener('blur',()=>{ const v=el.value; if(v!=='' && !isNaN(v)){ el.value=(Math.round(parseFloat(v)*100)/100).toFixed(2);} });
   }
+
+  // ----- Inline editor used across every transaction renderer -----
+  // Adds a small ✎ button to a row. Clicking it expands an editor inside
+  // the row letting the user change the date and amount. On save, the
+  // updater callback receives {date, amount} (amount is a Number) and is
+  // responsible for persisting + re-rendering. The amount input accepts
+  // negative values (some entries — Splitwise CC, Lend/Cash transfers —
+  // are stored negative) so we don't constrain it to positive-only.
+  function attachInlineEditor(item, entry, updater) {
+    const editBtn = document.createElement('span');
+    editBtn.className = 'edit-btn';
+    editBtn.dataset.id = entry.id;
+    editBtn.title = 'Edit date or amount';
+    editBtn.textContent = '✎';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // If an editor already exists in this row, just remove it (toggle).
+      const existing = item.querySelector('.inline-editor');
+      if (existing) { existing.remove(); item.classList.remove('editing'); return; }
+      const editor = document.createElement('div');
+      editor.className = 'inline-editor';
+      editor.innerHTML = `
+        <div class="ie-fields">
+          <div>
+            <label>Date</label>
+            <input type="date" class="ie-date" value="${entry.date || ''}">
+          </div>
+          <div>
+            <label>Amount</label>
+            <input type="number" step="0.01" inputmode="decimal" class="ie-amount" value="${(typeof entry.amount === 'number' ? entry.amount : 0).toFixed(2)}">
+          </div>
+        </div>
+        <div class="ie-actions">
+          <button type="button" class="ie-cancel">Cancel</button>
+          <button type="button" class="ie-save">Save</button>
+        </div>
+      `;
+      item.appendChild(editor);
+      item.classList.add('editing');
+      const dateInput = editor.querySelector('.ie-date');
+      const amtInput  = editor.querySelector('.ie-amount');
+      editor.querySelector('.ie-cancel').onclick = () => {
+        editor.remove();
+        item.classList.remove('editing');
+      };
+      editor.querySelector('.ie-save').onclick = () => {
+        const newDate = dateInput.value;
+        const newAmount = parseFloat(amtInput.value);
+        if (!newDate) { alert('Please pick a date.'); return; }
+        if (isNaN(newAmount)) { alert('Please enter a valid amount.'); return; }
+        updater({ date: newDate, amount: Math.round(newAmount * 100) / 100 });
+      };
+    });
+    item.appendChild(editBtn);
+  }
   function getData(key, fallback = []) {
     if (key in _dbCache) {
       const val = _dbCache[key];
@@ -2065,7 +2173,18 @@
       <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} | ${entry.mode}
       ${entry.entryType?`<span class="ml-2 text-xs px-2 py-1 rounded bg-slate-600">${entry.entryType}</span>`:""}
       ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
-    item.querySelector('.delete-btn').onclick=()=>deleteEntry(entry.id); expenseLog.prepend(item);
+    item.querySelector('.delete-btn').onclick=()=>deleteEntry(entry.id);
+    attachInlineEditor(item, entry, ({ date, amount }) => {
+      const idx = expenses.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        expenses[idx].date = date;
+        expenses[idx].amount = amount;
+        logAction('edit_entry', { id: entry.id, date, amount });
+        saveExpenses();
+        refreshCurrentWeekView();
+      }
+    });
+    expenseLog.prepend(item);
   }
   
   function deleteEntry(id){
@@ -2185,7 +2304,18 @@
     item.innerHTML=`<span class="delete-btn" data-id="${entry.id}">×</span>
       <strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category}
       ${entry.desc?`<br><span class="text-xs opacity-80">${entry.desc}</span>`:""}`;
-    item.querySelector('.delete-btn').onclick=()=>deleteIncome(entry.id); incomeLog.prepend(item);
+    item.querySelector('.delete-btn').onclick=()=>deleteIncome(entry.id);
+    attachInlineEditor(item, entry, ({ date, amount }) => {
+      const idx = incomes.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        incomes[idx].date = date;
+        incomes[idx].amount = amount;
+        logAction('edit_entry', { id: entry.id, date, amount });
+        saveIncomes();
+        rerenderIncomeLog();
+      }
+    });
+    incomeLog.prepend(item);
   }
   function rerenderIncomeLog(){ incomeLog.innerHTML=""; incomes.forEach(renderIncomeRow); }
   function deleteIncome(id){ 
@@ -2333,8 +2463,7 @@
     'EEM Wage': 'EEM CBA Debit',
     'JJP Credit Interest': 'JJP ING Debit',
     'EEM Credit Interest': 'EEM ING Debit',
-    'Tax Return': 'JJP CBA Debit',
-    'Cashback/Rewards': 'JJP CBA Debit'
+    'Tax Return': 'JJP CBA Debit'
   };
 
   const obFields = {
@@ -2651,6 +2780,15 @@
     const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.card}`;
     item.querySelector('.delete-btn').onclick = () => deleteCcSettlement(entry.id);
+    attachInlineEditor(item, entry, ({ date, amount }) => {
+      const idx = ccSettlements.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        ccSettlements[idx].date = date;
+        ccSettlements[idx].amount = amount;
+        saveCcSettlements();
+        renderCcSettlementLog();
+      }
+    });
     ccSettlementLog.prepend(item);
   }
   function renderCcSettlementLog(){ ccSettlementLog.innerHTML = ""; ccSettlements.forEach(renderCcSettlementRow); }
@@ -2698,6 +2836,15 @@
     const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} (via ${entry.mode || 'N/A'}) ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
     item.querySelector('.delete-btn').onclick = () => deleteLcEntry(entry.id);
+    attachInlineEditor(item, entry, ({ date, amount }) => {
+      const idx = lendCash.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        lendCash[idx].date = date;
+        lendCash[idx].amount = amount;
+        saveLendCash();
+        renderLcLog();
+      }
+    });
     lcLog.prepend(item);
   }
   function renderLcLog(){ lcLog.innerHTML = ""; lendCash.forEach(renderLcRow); }
@@ -2752,6 +2899,15 @@
     const item=document.createElement('div'); item.className='log-item'; item.dataset.id=entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
     item.querySelector('.delete-btn').onclick=()=>deleteSwSettlement(entry.id);
+    attachInlineEditor(item, entry, ({ date, amount }) => {
+      const idx = swSettlements.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        swSettlements[idx].date = date;
+        swSettlements[idx].amount = amount;
+        saveSwSettlements();
+        renderSwSettlementLog();
+      }
+    });
     swSettlementLog.prepend(item);
   }
   function renderSwSettlementLog(){ swSettlementLog.innerHTML=''; swSettlements.forEach(renderSwSettlementRow); }
@@ -3028,21 +3184,30 @@
           .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_cc') {
-        // Lend/Cash Holding entries on a credit-card payment mode (any sign)
+        // Lend/Cash Holding entries on a credit-card payment mode (any sign).
+        // Excludes "Settle Lend" — those are routed to CC Transfer (Non SW) instead.
         raw = getData('nwLendCash', [])
-          .filter(e => e.date === dateStr && CC_MODES.has(e.mode))
+          .filter(e => e.date === dateStr && CC_MODES.has(e.mode) && e.category !== 'Settle Lend')
           .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_debit_neg') {
-        // Lend/Cash Holding entries on a debit payment mode where amount is negative
+        // CC Transfer (Non SW) — fed by:
+        //   (a) Lend/Cash entries on a debit payment mode with negative amount
+        //   (b) ANY Lend/Cash entry tagged as 'Settle Lend' (any mode, any sign).
+        // Settle Lend amounts are entered as the user thinks of them (positive),
+        // and we display/copy them as-entered into this row.
         raw = getData('nwLendCash', [])
-          .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount < 0)
+          .filter(e => e.date === dateStr && (
+            (DEBIT_MODES.has(e.mode) && e.amount < 0 && e.category !== 'Settle Lend') ||
+            e.category === 'Settle Lend'
+          ))
           .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'lc_debit_pos') {
-        // Lend/Cash Holding entries on a debit payment mode where amount is positive
+        // Lend/Cash Holding entries on a debit payment mode where amount is positive.
+        // Excludes "Settle Lend" — those are routed to CC Transfer (Non SW) instead.
         raw = getData('nwLendCash', [])
-          .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount > 0)
+          .filter(e => e.date === dateStr && DEBIT_MODES.has(e.mode) && e.amount > 0 && e.category !== 'Settle Lend')
           .map(e => wrap(e.amount, e.desc));
 
       } else if (src === 'none') {
