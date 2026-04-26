@@ -175,12 +175,45 @@
     }
     /* Net Worth dedicated-view: nw-panels inherit section-page edges (no extra inset) */
     #netWorthSection.dedicated-view .nw-panel { padding: 0; }
-    /* Web Excel — tighter padding so the full weekly table fits in one viewport */
-    #webExcelSection { padding: 12px 12px 16px; }
+
+    /* === Web Excel — table-first, lifted layout ===
+       Hero hidden (table is self-evident), table sits at the same top
+       offset as the home page "J Money Tracker" title, controls live
+       below the table as a footer toolbar. */
+    #webExcelSection { padding: 24px 12px 16px; }
+    /* On desktop, leave room on the right for the hamburger button (~70px) */
     @media (min-width: 768px) {
-      #webExcelSection { padding: 12px 16px 16px; }
+      #webExcelSection { padding: 32px 88px 16px 16px; }
     }
-    #webExcelSection .panel-hero { margin: 0 0 8px 0; }
+    /* In split-mode the right pane has no hamburger above it (hamburger is over
+       whole viewport), so reserve the same right inset to keep the toggle out
+       of the way */
+    body.split-mode #webExcelSection { padding-right: 88px; }
+    /* Hide hero on this page */
+    #webExcelSection .panel-hero { display: none !important; }
+
+    /* Footer toolbar */
+    #wxFooterBar {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+    #wxFooterBar .wx-week-nav { display: flex; align-items: center; gap: 12px; }
+    #wxFooterBar .wx-copy-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    #wxFooterBar .wx-caption {
+      font-size: 0.7rem;
+      opacity: 0.5;
+      text-align: center;
+      max-width: 600px;
+      margin: 0;
+    }
+
+    /* Hide theme toggle while Web Excel is the active section, OR while
+       split-mode is on (the Excel pane is always present in split mode). */
+    body.wx-active #themeToggle,
+    body.split-mode #themeToggle { display: none !important; }
 
     /* Inputs */
     input, select, textarea {
@@ -1125,43 +1158,41 @@
 
 <!-- ============ WEB EXCEL VIEW ============ -->
 <div id="webExcelSection" class="section-page hidden">
-  <div class="panel-hero">
+  <!-- Hero hidden via CSS — no title needed on this page; the table is self-evident -->
+  <div class="panel-hero" aria-hidden="true">
     <div class="panel-hero-icon">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
     </div>
-    <div class="panel-hero-text">
-      <h1>Web Excel View</h1>
-    </div>
-  </div>
-
-  <!-- Week Navigation -->
-  <div class="flex items-center justify-center gap-3 mb-2">
-    <button id="wxPrevWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&lt;</button>
-    <span id="wxWeekLabel" class="text-sm font-semibold text-white"></span>
-    <button id="wxNextWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&gt;</button>
-  </div>
-
-  <!-- Copy Buttons -->
-  <div class="flex justify-end mb-2 gap-2 flex-wrap">
-    <button id="wxCopyExpensesBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold groovy-button text-white flex items-center gap-1.5">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-      Copy Expenses
-    </button>
-    <button id="wxCopySplitwiseBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold groovy-button text-white flex items-center gap-1.5">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-      Copy Splitwise
-    </button>
+    <div class="panel-hero-text"><h1>Web Excel View</h1></div>
   </div>
 
   <!-- Table -->
-  <div class="overflow-x-auto rounded-xl">
+  <div class="overflow-x-auto rounded-xl" id="wxTableWrap">
     <table id="wxTable" style="border-collapse:collapse;width:100%;font-size:0.62rem;table-layout:fixed;line-height:1;">
       <thead id="wxThead"></thead>
       <tbody id="wxTbody"></tbody>
     </table>
   </div>
 
-  <p class="text-xs opacity-50 mt-2 text-center">Copy Expenses pastes the full grid (with a blank row break before the Splitwise section). Copy Splitwise pastes only the 3 splitwise rows (B–H).</p>
+  <!-- Footer toolbar: week navigation + copy buttons + caption -->
+  <div id="wxFooterBar">
+    <div class="wx-week-nav">
+      <button id="wxPrevWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&lt;</button>
+      <span id="wxWeekLabel" class="text-sm font-semibold text-white"></span>
+      <button id="wxNextWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&gt;</button>
+    </div>
+    <div class="wx-copy-buttons">
+      <button id="wxCopyExpensesBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold groovy-button text-white flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+        Copy Expenses
+      </button>
+      <button id="wxCopySplitwiseBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold groovy-button text-white flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+        Copy Splitwise
+      </button>
+    </div>
+    <p class="wx-caption">Copy Expenses pastes the full grid (with a blank row break before the Splitwise section). Copy Splitwise pastes only the 3 splitwise rows (B–H).</p>
+  </div>
 </div>
 
 </div><!-- /#splitRight -->
@@ -1411,6 +1442,10 @@
     } else {
       netWorthSection.classList.remove('dedicated-view');
     }
+
+    // Mark body when Web Excel is the active section so chrome elements
+    // (e.g. the theme toggle) can hide themselves to free vertical space.
+    document.body.classList.toggle('wx-active', section === webExcelSection);
 
     if (opts.activeNav) setActiveBottomNav(opts.activeNav);
     else setActiveBottomNav(null);
