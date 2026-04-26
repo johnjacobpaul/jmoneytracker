@@ -512,6 +512,63 @@
       font-size: 0.72rem;
     }
 
+    /* Week-label clickable + dropdown picker */
+    #wxWeekLabel {
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 6px;
+      transition: background 0.15s, text-decoration 0.15s;
+      text-decoration: underline dotted;
+      text-decoration-color: var(--text-muted);
+      text-underline-offset: 3px;
+    }
+    #wxWeekLabel:hover {
+      background: var(--surface-2);
+      text-decoration-color: var(--text-strong);
+    }
+    #wxWeekPicker {
+      position: absolute;
+      z-index: 70;
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      padding: 4px;
+    }
+    #wxWeekPicker .wp-item {
+      display: block;
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #wxWeekPicker .wp-item:hover { background: var(--surface-2); color: var(--text-strong); }
+    #wxWeekPicker .wp-item.current {
+      background: var(--surface-3);
+      color: var(--text-strong);
+      font-weight: 600;
+    }
+    #wxWeekPicker .wp-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+    #wxWeekPicker .wp-more {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    #wxWeekPicker .wp-more:hover { color: var(--text-strong); }
+
     /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
     #netWorthSection.dedicated-view > header { display: none !important; }
     #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
@@ -1461,10 +1518,11 @@
 
   <!-- Footer toolbar: week navigation + copy buttons + caption -->
   <div id="wxFooterBar">
-    <div class="wx-week-nav">
+    <div class="wx-week-nav" style="position:relative;">
       <button id="wxPrevWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&lt;</button>
-      <span id="wxWeekLabel" class="text-sm font-semibold text-white"></span>
+      <span id="wxWeekLabel" class="text-sm font-semibold text-white" role="button" tabindex="0" title="Click to jump to a previous week"></span>
       <button id="wxNextWeek" class="p-1 rounded-full groovy-button text-base leading-none flex items-center justify-center w-7 h-7">&gt;</button>
+      <div id="wxWeekPicker" class="hidden"></div>
     </div>
     <div class="wx-copy-buttons">
       <button id="wxCopyExpensesBtn" class="px-3 py-1.5 rounded-lg text-xs font-semibold groovy-button text-white flex items-center gap-1.5">
@@ -3766,6 +3824,88 @@
       const next = new Date(wxWeekStart); next.setDate(next.getDate() + 7);
       const limit = wxGetWeekStart(); limit.setDate(limit.getDate() + 7);
       if (next < limit) { wxWeekStart = next; renderWebExcel(); }
+    });
+
+    // === Week picker dropdown ===
+    // Click the date label to jump to a previous week without arrowing through.
+    // Lists the most recent N weeks; "Earlier..." extends the list by N more.
+    const WEEK_BATCH = 12;
+    let weekPickerCount = WEEK_BATCH;
+    const weekLabelEl = document.getElementById('wxWeekLabel');
+    const weekPickerEl = document.getElementById('wxWeekPicker');
+
+    function fmtWeekStart(d) {
+      return 'Week of ' + d.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    function buildWeekPicker() {
+      weekPickerEl.innerHTML = '';
+      const currentTop = wxGetWeekStart();        // most recent week start (current real week)
+      const currentSelectedTime = wxWeekStart.getTime();
+      for (let i = 0; i < weekPickerCount; i++) {
+        const d = new Date(currentTop);
+        d.setDate(d.getDate() - i * 7);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'wp-item' + (d.getTime() === currentSelectedTime ? ' current' : '');
+        btn.textContent = fmtWeekStart(d);
+        btn.addEventListener('click', () => {
+          wxWeekStart = d;
+          weekPickerEl.classList.add('hidden');
+          renderWebExcel();
+        });
+        weekPickerEl.appendChild(btn);
+      }
+      // "Earlier..." link to extend the list further back
+      const divider = document.createElement('div');
+      divider.className = 'wp-divider';
+      weekPickerEl.appendChild(divider);
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'wp-item wp-more';
+      more.textContent = '↓ Show earlier weeks';
+      more.addEventListener('click', () => {
+        weekPickerCount += WEEK_BATCH;
+        buildWeekPicker();
+      });
+      weekPickerEl.appendChild(more);
+    }
+
+    function openWeekPicker() {
+      weekPickerCount = WEEK_BATCH;
+      buildWeekPicker();
+      // Position the picker just under the label
+      const labelRect = weekLabelEl.getBoundingClientRect();
+      const navRect = weekLabelEl.parentElement.getBoundingClientRect();
+      // Position is relative to the parent (.wx-week-nav, position: relative)
+      weekPickerEl.style.top = (labelRect.bottom - navRect.top + 4) + 'px';
+      weekPickerEl.style.left = (labelRect.left - navRect.left) + 'px';
+      weekPickerEl.classList.remove('hidden');
+    }
+
+    function closeWeekPicker() {
+      weekPickerEl.classList.add('hidden');
+    }
+
+    weekLabelEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (weekPickerEl.classList.contains('hidden')) openWeekPicker();
+      else closeWeekPicker();
+    });
+    weekLabelEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWeekPicker(); }
+    });
+
+    // Click-outside dismisses
+    document.addEventListener('click', (e) => {
+      if (!weekPickerEl.classList.contains('hidden')
+          && !weekPickerEl.contains(e.target)
+          && e.target !== weekLabelEl) {
+        closeWeekPicker();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !weekPickerEl.classList.contains('hidden')) closeWeekPicker();
     });
 
     // Expose for navAnalytics click
