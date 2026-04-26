@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>J Money Tracker - v1.0</title>
+  <title>J Money Tracker - v1.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -261,8 +261,43 @@
     .delete-btn { position: absolute; right: 8px; top: 8px; cursor: pointer; color: var(--danger); font-weight: bold; }
     .edit-btn   { position: absolute; right: 30px; top: 8px; cursor: pointer; color: var(--text-strong); font-weight: bold; opacity: 0.6; transition: opacity 0.15s; user-select: none; }
     .edit-btn:hover { opacity: 1; }
+    .flag-btn   { position: absolute; right: 52px; top: 8px; cursor: pointer; font-weight: bold; opacity: 0.4; transition: opacity 0.15s; user-select: none; line-height: 1; }
+    .flag-btn:hover { opacity: 0.85; }
+    .flag-btn.flagged { opacity: 1; }
+    /* Flagged rows get a red left rail so they're visible at a glance */
+    .log-item.flagged {
+      border-left: 3px solid var(--danger);
+      padding-left: 12px;
+    }
+    /* Filter toolbar above lend/cash log */
+    .lc-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+    }
+    .lc-filter-bar label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text);
+      user-select: none;
+    }
+    .lc-filter-bar input[type="checkbox"] {
+      width: 14px; height: 14px;
+      accent-color: var(--danger);
+      cursor: pointer;
+    }
+    .lc-filter-count {
+      margin-left: auto;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
     .log-item.editing .delete-btn,
-    .log-item.editing .edit-btn { display: none; }
+    .log-item.editing .edit-btn,
+    .log-item.editing .flag-btn { display: none; }
     .inline-editor {
       margin-top: 8px;
       padding: 10px;
@@ -1104,6 +1139,13 @@
     <!-- Log -->
     <div class="p-4 rounded-2xl border border-[#5A5157]">
       <h2 class="text-xl font-semibold mb-2">Lend / Cash Holdings Log</h2>
+      <div class="lc-filter-bar">
+        <label>
+          <input type="checkbox" id="lcFlagFilter">
+          🚩 Show flagged only
+        </label>
+        <span class="lc-filter-count" id="lcFilterCount"></span>
+      </div>
       <section id="lcLog" class="space-y-2"></section>
     </div>
 
@@ -2550,7 +2592,12 @@
           }, 0);
         calcVal -= deductions;
         
-        const lendCashDeductions = lendCash.filter(lc => lc.mode === name).reduce((s, lc) => s + lc.amount, 0);
+        // Lend/Cash subtraction — but "Settle Lend" entries are receipts
+        // (someone paid you back), so they ADD to the account balance.
+        // Effective amount: +amount for Settle Lend, -amount for everything else.
+        const lendCashDeductions = lendCash
+          .filter(lc => lc.mode === name)
+          .reduce((s, lc) => s + (lc.category === 'Settle Lend' ? -lc.amount : lc.amount), 0);
         calcVal -= lendCashDeductions;
 
         if (name === 'JJP CBA Debit') {
@@ -2581,7 +2628,11 @@
               return sum + amount;
           }, 0);
       
-      const lentOnCard = lendCash.filter(lc => lc.mode === name).reduce((s, lc) => s + lc.amount, 0);
+      // Lend/Cash on a card adds to the card balance — except "Settle Lend"
+      // (a receipt: someone paid back via this card), which reduces it.
+      const lentOnCard = lendCash
+        .filter(lc => lc.mode === name)
+        .reduce((s, lc) => s + (lc.category === 'Settle Lend' ? -lc.amount : lc.amount), 0);
       expenseOnCard += lentOnCard;
       
       const settlements = ccSet.filter(c => c.card === name).reduce((s, c) => s + c.amount, 0);
@@ -2602,8 +2653,11 @@
     netWorthTotals.cc = { total: totalLiability, accounts: ccResults };
     buildLiabilitiesTable();
 
-    // Lend/Cash
-    const lcTotal = (opens['Cash Holdings'] || 0) + lendCash.reduce((s,x)=> s + x.amount, 0);
+    // Lend/Cash subtotal — Settle Lend entries reduce the outstanding lent
+    // amount (you got paid back), so their sign is flipped here too.
+    const lcTotal = (opens['Cash Holdings'] || 0) + lendCash.reduce(
+      (s, x) => s + (x.category === 'Settle Lend' ? -x.amount : x.amount), 0
+    );
     netWorthTotals.lc = { total: lcTotal };
     buildLendCash();
 
@@ -2829,13 +2883,36 @@
   }
   function closeLc(){ lcDialog.classList.add('hidden'); }
   lcAddBtn.addEventListener('click', openLc);
+  // Re-render when the flag filter checkbox is toggled
+  const lcFlagFilterEl = document.getElementById('lcFlagFilter');
+  if (lcFlagFilterEl) lcFlagFilterEl.addEventListener('change', renderLcLog);
   lcCancel.addEventListener('click', closeLc);
   enforce2dp(lcAmount);
   function saveLendCash(){ dbSet('nwLendCash', lendCash); recalculateAllNetWorth(); }
   function renderLcRow(entry){
-    const item = document.createElement('div'); item.className = 'log-item'; item.dataset.id = entry.id;
+    const item = document.createElement('div');
+    item.className = 'log-item' + (entry.flagged ? ' flagged' : '');
+    item.dataset.id = entry.id;
     item.innerHTML = `<span class="delete-btn" data-id="${entry.id}">×</span><strong>${entry.date}</strong> - ${formatCurrency(entry.amount)} | ${entry.category} (via ${entry.mode || 'N/A'}) ${entry.desc ? `<br><span class="text-xs opacity-80">${entry.desc}</span>` : ""}`;
     item.querySelector('.delete-btn').onclick = () => deleteLcEntry(entry.id);
+
+    // 🚩 Flag toggle — marks an entry as "unsettled / follow up".
+    // Persists on the entry object as `flagged: true`.
+    const flagBtn = document.createElement('span');
+    flagBtn.className = 'flag-btn' + (entry.flagged ? ' flagged' : '');
+    flagBtn.title = entry.flagged ? 'Unflag (mark as settled / no follow-up)' : 'Flag for follow-up';
+    flagBtn.textContent = '🚩';
+    flagBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = lendCash.findIndex(x => x.id === entry.id);
+      if (idx > -1) {
+        lendCash[idx].flagged = !lendCash[idx].flagged;
+        saveLendCash();
+        renderLcLog();
+      }
+    });
+    item.appendChild(flagBtn);
+
     attachInlineEditor(item, entry, ({ date, amount }) => {
       const idx = lendCash.findIndex(x => x.id === entry.id);
       if (idx > -1) {
@@ -2847,7 +2924,22 @@
     });
     lcLog.prepend(item);
   }
-  function renderLcLog(){ lcLog.innerHTML = ""; lendCash.forEach(renderLcRow); }
+
+  function renderLcLog(){
+    lcLog.innerHTML = "";
+    const flagFilter = document.getElementById('lcFlagFilter');
+    const onlyFlagged = flagFilter && flagFilter.checked;
+    const visible = onlyFlagged ? lendCash.filter(e => e.flagged) : lendCash;
+    visible.forEach(renderLcRow);
+    // Show "X flagged of Y total" caption
+    const countEl = document.getElementById('lcFilterCount');
+    if (countEl) {
+      const totalFlagged = lendCash.filter(e => e.flagged).length;
+      countEl.textContent = onlyFlagged
+        ? `${visible.length} flagged`
+        : (totalFlagged > 0 ? `${totalFlagged} flagged` : '');
+    }
+  }
   function deleteLcEntry(id){
     const i = lendCash.findIndex(x=>x.id===id);
     if (i>-1) { lendCash.splice(i,1); saveLendCash(); renderLcLog(); }
