@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>J Money Tracker - v1.1</title>
+  <title>J Money Tracker - V4.6.15</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
@@ -74,6 +74,22 @@
       if (typeof lendCash !== 'undefined')      lendCash      = getData('nwLendCash', []);
       if (typeof swSettlements !== 'undefined') swSettlements = getData('nwSplitwiseSettlements', []);
       if (typeof salaryConfig !== 'undefined')  salaryConfig  = getData('salaryConfig', { jjp_wage: 1614.00, jjp_payg: 484.00, eem_wage: 0, eem_payg: 0 });
+
+      // One-time migration: backfill flagged=true on existing "Lend" and
+      // "Cash Holdings" entries so the auto-flag rule applies retroactively.
+      // Runs once per user; the migration marker prevents it from re-flagging
+      // entries the user has subsequently un-flagged manually.
+      if (typeof lendCash !== 'undefined' && !getData('migration_lendFlagBackfill_v2', false)) {
+        let touched = false;
+        lendCash.forEach(e => {
+          if ((e.category === 'Lend' || e.category === 'Cash Holdings') && e.flagged === undefined) {
+            e.flagged = true;
+            touched = true;
+          }
+        });
+        if (touched) dbSet('nwLendCash', lendCash);
+        dbSet('migration_lendFlagBackfill_v2', true);
+      }
 
       showSection(homeSection);
       populateHomePageNav();
@@ -1315,7 +1331,7 @@
         Copy Splitwise
       </button>
     </div>
-    <p class="wx-caption">Copy Expenses pastes the full grid (with a blank row break before the Splitwise section). Copy Splitwise pastes only the 3 splitwise rows (B–H).</p>
+    <p class="wx-caption">Copy Expenses pastes the expense block (last row: CC Transfer Non SW). Copy Splitwise pastes the 3 splitwise rows separately.</p>
   </div>
 </div>
 
@@ -2955,7 +2971,20 @@
       return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     })();
     if (!iso) { alert('Please pick a date.'); return; }
-    lendCash.push({ id: Date.now()+Math.random(), date: iso, amount: Math.round(amt*100)/100, category: lcCategory.value, desc: lcDesc.value||"", mode: mode });
+    const cat = lcCategory.value;
+    // Auto-flag new "Lend" and "Cash Holdings" entries so the user can track
+    // them. Settle Lend (already-settled receipt) is NOT auto-flagged.
+    // The user can still toggle the flag manually.
+    const autoFlag = (cat === 'Lend' || cat === 'Cash Holdings');
+    lendCash.push({
+      id: Date.now()+Math.random(),
+      date: iso,
+      amount: Math.round(amt*100)/100,
+      category: cat,
+      desc: lcDesc.value||"",
+      mode: mode,
+      flagged: autoFlag
+    });
     saveLendCash(); renderLcLog(); closeLc();
   });
   function buildLendCash(){
@@ -3481,17 +3510,10 @@
 
     // Copy Expenses: all expense rows + blank break + splitwise rows
     document.getElementById('wxCopyExpensesBtn').addEventListener('click', async () => {
-      const expenseRows  = document.querySelectorAll('.wx-expense-row');
-      const splitwiseRows = document.querySelectorAll('.wx-splitwise-row');
-      const expensePart   = rowsToClipboard(expenseRows);
-      const splitwisePart = rowsToClipboard(splitwiseRows);
-      const blankTsv  = Array(7).fill('').join('\t');
-      const blankHtml = '<tr>' + Array(7).fill('<td></td>').join('') + '</tr>';
-      const tsv  = [expensePart.tsv, blankTsv, splitwisePart.tsv].filter(x => x.length).join('\n');
-      const html = '<table>' + (expensePart.html.replace(/^<table>|<\/table>$/g,'')) +
-                              blankHtml +
-                              (splitwisePart.html.replace(/^<table>|<\/table>$/g,'')) +
-                   '</table>';
+      // Copy only the expense block — last row is CC Transfer (Non SW).
+      // The splitwise rows are handled by the dedicated Copy Splitwise button.
+      const expenseRows = document.querySelectorAll('.wx-expense-row');
+      const { tsv, html } = rowsToClipboard(expenseRows);
       const ok = await writeBothFormats(tsv, html);
       if (ok) flashCopied(document.getElementById('wxCopyExpensesBtn'));
       else alert('Copy failed — please select the table manually and copy.');
