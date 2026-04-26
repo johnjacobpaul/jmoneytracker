@@ -150,7 +150,31 @@
       --accent-hov:    #d63d95;
     }
 
-    body { font-family: 'Inter', sans-serif; background: var(--app-bg); color: var(--text); transition: background .25s ease, color .25s ease; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--app-bg);
+      color: var(--text);
+      transition: background .25s ease, color .25s ease;
+      /* Slightly smaller default body text so it sits clearly below the
+         heading sizes set in panel-hero / hero-card. Headings are explicitly
+         set in their own rules so they're unaffected. */
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+    /* Pull Tailwind's text utilities down a notch for visual consistency
+       with the new body baseline. Headings (h1/h2/h3) are sized in their own
+       rules so they remain distinctly larger. Inputs and buttons are
+       sized via .fi / .groovy-button so those are also unaffected. */
+    p, span, div, label, td, th, li, a, small, strong, em {
+      font-size: inherit;
+    }
+    .text-base { font-size: 0.85rem !important; }
+    .text-sm   { font-size: 0.78rem !important; }
+    .text-xs   { font-size: 0.7rem  !important; }
+    .text-lg   { font-size: 0.95rem !important; }
+    .text-xl   { font-size: 1.05rem !important; }
+    /* text-2xl, text-3xl, text-4xl, text-5xl, text-6xl left at Tailwind defaults
+       so hero values, snapshot numbers, and the home title remain prominent. */
     html { overflow-x: hidden; }
     #webExcelSection .overflow-x-auto { -webkit-overflow-scrolling: touch; max-width: 100vw; }
     .container { max-width: 650px; }
@@ -273,10 +297,16 @@
     /* === Dedicated-view mode for Splitwise/Liabilities/Lend-Cash === */
     #netWorthSection.dedicated-view > header { display: none !important; }
     #netWorthSection.dedicated-view #nwTabsBar { display: none !important; }
-    /* Hide the parent "Report Closing Balance" hero when a child tab is shown standalone.
-       The child .nw-panel renders its own panel-hero (Splitwise / Liabilities / Lend & Cash),
-       and we don't want both stacked. */
+    /* Hide the parent "Report Closing Balance" hero when a child tab is shown standalone. */
     #netWorthSection.dedicated-view > .panel-hero { display: none !important; }
+
+    /* === Assets-only mode (Report Closing Balance) ===
+       Hides the tab bar and non-Primary-Assets panels. The user navigates
+       to Splitwise/Liabilities/Lend-Cash via the bottom nav, not via tabs. */
+    #netWorthSection.assets-only #nwTabsBar { display: none !important; }
+    #netWorthSection.assets-only #tab-cash,
+    #netWorthSection.assets-only #tab-splitwise,
+    #netWorthSection.assets-only #tab-liabilities { display: none !important; }
 
     /* === Page header — used on EVERY non-home section ===
        A flat, top-left-aligned strip. No box, no background, no padding —
@@ -1437,10 +1467,13 @@
 
     // Toggle dedicated-view styling on netWorthSection.
     // dedicated=true → hides the section header & tab bar so the panel stands alone.
+    // assetsOnly=true → hides tab bar and non-Primary-Assets panels (Report Closing Balance view).
     if (section === netWorthSection) {
       netWorthSection.classList.toggle('dedicated-view', !!opts.dedicated);
+      netWorthSection.classList.toggle('assets-only', !!opts.assetsOnly);
     } else {
       netWorthSection.classList.remove('dedicated-view');
+      netWorthSection.classList.remove('assets-only');
     }
 
     // Mark body when Web Excel is the active section so chrome elements
@@ -1459,8 +1492,8 @@
   };
   document.getElementById('navLogIncome').onclick = () => showSection(incomeSection, { activeNav: 'navLogIncome' });
   document.getElementById('navNetWorth').onclick = () => {
-    // Report Closing Balance — full Net Worth view (header + tabs visible)
-    showSection(netWorthSection, { dedicated: false });
+    // Report Closing Balance — Primary Assets only, no tabs
+    showSection(netWorthSection, { dedicated: false, assetsOnly: true });
     recalculateAllNetWorth();
     activateTab(document.querySelector('[data-tab="tab-assets"]'));
   };
